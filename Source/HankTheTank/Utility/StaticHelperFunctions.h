@@ -56,7 +56,7 @@ public:
 		if (Owner)
 		{
 			UActorComponent* ActorComp = Owner->GetComponentByClass(CompType::StaticClass());
-			desiredComp = Cast<CompType>(ActorComp);
+			DesiredComp = Cast<CompType>(ActorComp);
 		}
 
 		return DesiredComp;

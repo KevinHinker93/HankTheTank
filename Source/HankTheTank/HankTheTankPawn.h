@@ -6,6 +6,11 @@
 #include "GameFramework/Character.h"
 #include "HankTheTankPawn.generated.h"
 
+class UGunControllerComponent;
+class UTankTargetHandlerComponent;
+
+// TODO: clean up and create better hierarchy for tank meshes
+
 UCLASS(Blueprintable)
 class AHankTheTankPawn : public APawn
 {
@@ -60,6 +65,14 @@ public:
 	static const FName FireRightBinding;
 
 private:
+
+	/* The mesh component */
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Gameplay", meta = (AllowPrivateAccess = "true"))
+		UGunControllerComponent* GunControllerComponent;
+
+	/** The camera */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gameplay", meta = (AllowPrivateAccess = "true"))
+		UTankTargetHandlerComponent* TargetHandlerComponent;
 
 	/* Flag to control firing  */
 	uint32 bCanFire : 1;

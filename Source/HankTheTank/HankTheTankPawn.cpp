@@ -12,6 +12,8 @@
 #include "Engine/StaticMesh.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundBase.h"
+#include "Components/GunControllerComponent.h"
+#include "Components/TankTargetHandlerComponent.h"
 
 const FName AHankTheTankPawn::MoveForwardBinding("MoveForward");
 const FName AHankTheTankPawn::MoveRightBinding("MoveRight");
@@ -43,6 +45,12 @@ AHankTheTankPawn::AHankTheTankPawn()
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("TopDownCamera"));
 	CameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	CameraComponent->bUsePawnControlRotation = false;	// Camera does not rotate relative to arm
+
+	// Create gun controller
+	GunControllerComponent = CreateDefaultSubobject<UGunControllerComponent>(TEXT("GunController"));
+
+	// Create target handler
+	TargetHandlerComponent = CreateDefaultSubobject<UTankTargetHandlerComponent>(TEXT("TargetHandler"));
 
 	// Movement
 	MoveSpeed = 1000.0f;
@@ -80,14 +88,14 @@ void AHankTheTankPawn::Tick(float DeltaSeconds)
 	{
 		const FRotator NewRotation = Movement.Rotation();
 		FHitResult Hit(1.f);
-		RootComponent->MoveComponent(Movement, NewRotation, true, &Hit);
+		RootComponent->MoveComponent(Movement, NewRotation, false, &Hit);
 		
-		if (Hit.IsValidBlockingHit())
+		/*if (Hit.IsValidBlockingHit())
 		{
 			const FVector Normal2D = Hit.Normal.GetSafeNormal2D();
 			const FVector Deflection = FVector::VectorPlaneProject(Movement, Normal2D) * (1.f - Hit.Time);
 			RootComponent->MoveComponent(Deflection, NewRotation, true);
-		}
+		}*/
 	}
 	
 	// Create fire direction vector

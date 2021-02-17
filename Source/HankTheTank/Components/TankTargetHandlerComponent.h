@@ -22,21 +22,31 @@ class HANKTHETANK_API UTankTargetHandlerComponent : public UActorComponent
 public:	
 	UTankTargetHandlerComponent();
 
+	UFUNCTION(BlueprintCallable, Category = "Gameplay")
+		AActor* GetTargetActor() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Gameplay")
+		FVector GetTargetLocation() const;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	virtual void InitTankController();
 	/**
 	* Called every frame to track a specific target.
 	*/
 	virtual void TrackTarget();
 
 	// Can be nullptr, always check for nullptr
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY()
 		AActor* TargetActor = nullptr;
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-		FVector TargetLocation = FVector::ZeroVector;
+	FVector TargetLocation = FVector::ZeroVector;
 
 private:
-	APlayerController* TankPlayerController;
+	UPROPERTY(EditAnywhere)
+		bool bDebugDrawMousePosition = false;
+
+	UPROPERTY()
+		APlayerController* TankPlayerController;
 };

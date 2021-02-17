@@ -6,7 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "GunControllerComponent.generated.h"
 
-class UStaticMeshComponent;
+class USceneComponent;
+class UTankTargetHandlerComponent;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class HANKTHETANK_API UGunControllerComponent : public UActorComponent
@@ -25,11 +26,14 @@ protected:
 
 private:	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-		FString sGunMeshName;
+		FName nGunTowerComponentTagName;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-		UStaticMeshComponent* GunMeshToControll;
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+		USceneComponent* GunTowerComponentToControl;
 
-	/*void RotateTowardsTarget();
-	void ReachedTargetRotation();*/
+	UPROPERTY()
+		UTankTargetHandlerComponent* TargetHandlerComponent;
+
+	void RotateTowardsTarget();
+	//void ReachedTargetRotation();
 };
