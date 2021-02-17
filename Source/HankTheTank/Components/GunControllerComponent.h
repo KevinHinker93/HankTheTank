@@ -17,15 +17,25 @@ class HANKTHETANK_API UGunControllerComponent : public UActorComponent
 public:	
 	UGunControllerComponent();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, Category = "Rotation Settings", BlueprintReadWrite)
 		float fGunAngularVelocity;
+	// Angular threshold in degrees at which the tower starts rotating towards the target
+	UPROPERTY(EditAnywhere, Category = "Rotation Settings", BlueprintReadWrite)
+		float fGunAngularThreshold;
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-private:	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	virtual void SetCurrentAngleBetweenGunTowerAndTarget();
+
+	bool bRotationIsDirty = false;
+	float fCurrentDesiredZTowerRotation = 0.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Debug", meta = (AllowPrivateAccess = "true"))
+		bool bDebugDrawLineFromTowerToMouse = false;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Settings", BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		FName nGunTowerComponentTagName;
 
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
@@ -34,6 +44,9 @@ private:
 	UPROPERTY()
 		UTankTargetHandlerComponent* TargetHandlerComponent;
 
-	void RotateTowardsTarget();
+	
+
+	
+	virtual void RotateTowardsTarget();
 	//void ReachedTargetRotation();
 };

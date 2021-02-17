@@ -44,7 +44,7 @@ protected:
 	FVector TargetLocation = FVector::ZeroVector;
 
 private:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
 		bool bDebugDrawMousePosition = false;
 
 	UPROPERTY()
