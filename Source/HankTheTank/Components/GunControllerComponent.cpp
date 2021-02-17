@@ -48,7 +48,7 @@ void UGunControllerComponent::RotateTowardsTarget()
 		FRotator LookAtTargetRotation = UKismetMathLibrary::FindLookAtRotation(GunTowerComponentToControl->GetComponentLocation(), TargetLocation);
 		FVector GunTowerRotationInEulerAngles = GunTowerComponentToControl->GetComponentRotation().Euler();
 		FRotator TargetRotation = FRotator::MakeFromEuler(FVector(GunTowerRotationInEulerAngles.X, GunTowerRotationInEulerAngles.Y, LookAtTargetRotation.Euler().Z));
-		GunTowerComponentToControl->SetRelativeRotation(TargetRotation);
+		GunTowerComponentToControl->SetWorldRotation(TargetRotation);
 
 
 		FVector GunTowerToMouseDirection = TargetLocation - GunTowerComponentToControl->GetComponentLocation();
