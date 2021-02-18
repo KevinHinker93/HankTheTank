@@ -30,7 +30,7 @@ AHankTheTankProjectile::AHankTheTankProjectile()
 	ProjectileMovement->ProjectileGravityScale = 0.f; // No gravity
 
 	// Die after 3 seconds by default
-	InitialLifeSpan = 3.0f;
+	//InitialLifeSpan = 3.0f;
 }
 
 void AHankTheTankProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
@@ -42,4 +42,14 @@ void AHankTheTankProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherAc
 	}
 
 	Destroy();
+}
+
+void AHankTheTankProjectile::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
+void AHankTheTankProjectile::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
 }

@@ -15,8 +15,17 @@ class HANKTHETANK_API ARocketProjectile : public AHankTheTankProjectile
 
 		ARocketProjectile();
 
+public:
+	UPROPERTY(EditDefaultsOnly, Category = "Movement Settings")
+		float fStartingVelocity = 1000.0f;
+	UPROPERTY(EditDefaultsOnly, Category = "Movement Settings")
+		float fMaxVelocity = 1800.0f;
+	UPROPERTY(EditDefaultsOnly, Category = "Movement Settings")
+		float fTimeToReachMaxVelocityInSeconds = 2.0f;
+
 protected:
 	virtual void BeginPlay();
+	virtual void Tick(float DeltaSeconds) override;
 
 private:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Collider, meta = (AllowPrivateAccess = "true"))
@@ -28,5 +37,7 @@ private:
 
 	UFUNCTION()
 		void OnStartHoming(const AActor* HomingTarget);
+
+	void SetProjectileVelocity(const float fVelocity);
 	
 };

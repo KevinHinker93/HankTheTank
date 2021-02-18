@@ -27,6 +27,9 @@ public:
 	FORCEINLINE UProjectileMovementComponent* GetProjectileMovement() const { return ProjectileMovement; }
 
 protected:
+	virtual void BeginPlay();
+	virtual void Tick(float DeltaSeconds) override;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Projectile, meta = (AllowPrivateAccess = "true"))
 		UStaticMeshComponent* ProjectileMesh;
 
