@@ -17,10 +17,10 @@ void UGunControllerComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Get and set neccessary components
 	AActor* OwningActor = GetOwner();
 	if (OwningActor)
 	{
-
 		GET_OBJ_CHECKED(TargetHandlerComponent, UStaticHelperFunctions::GetActorCompAs<UTankTargetHandlerComponent>(OwningActor), LogPlayerTank,
 			TEXT("Tank: %s has no TankTargetHandlerComponent assigned, have you forgot to add one?"), *OwningActor->GetName());
 
@@ -35,6 +35,8 @@ void UGunControllerComponent::TickComponent(float DeltaTime, ELevelTick TickType
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	SetCurrentAngleBetweenGunTowerAndTarget();
+
+	// Only allow rotation when the mouse pointer at least moved fGunAngularThreshold angles
 	if (!bRotationIsDirty && FMath::Abs(fCurrentDesiredZTowerRotation) >= fGunAngularThreshold)
 	{
 		bRotationIsDirty = true;
@@ -51,81 +53,71 @@ void UGunControllerComponent::SetCurrentAngleBetweenGunTowerAndTarget()
 	EXECUTE_BLOCK_CHECKED(TargetHandlerComponent, LogPlayerTank,
 		TEXT("Tank: %s could not calculate tower to mouse angle, because the TankTargetHandlerComponent is null"), *GetOwner()->GetName())
 	{
+		// Get target position, since the mouse pointer will not yield an actor as target
 		FVector TargetLocation = TargetHandlerComponent->GetTargetLocation();
-		TargetLocation.Z = 0.0f;
-
+		TargetLocation.Z = 0.0f; // z component not neccessary for calculations
 
 		FRotator LookAtTargetRotation = UKismetMathLibrary::FindLookAtRotation(GunTowerComponentToControl->GetComponentLocation(), TargetLocation);
-		fCurrentDesiredZTowerRotation = LookAtTargetRotation.Euler().Z;
-
-		if (fCurrentDesiredZTowerRotation < 0)
-		{
-			fCurrentDesiredZTowerRotation = 360 + fCurrentDesiredZTowerRotation;
-		}
+		fCurrentDesiredZTowerRotation = LookAtTargetRotation.Euler().Z; // Only z component is relevant for tower rotation
 
 		FVector GunTowerLocation = GunTowerComponentToControl->GetComponentLocation();
 		GunTowerLocation.Z = 0.0f;
 		FVector GunTowerToMouseDirection = TargetLocation - GunTowerLocation;
 		GunTowerToMouseDirection.Normalize();
-		FVector GunTowerFacingDirection = GunTowerComponentToControl->GetForwardVector();
-		GunTowerFacingDirection.Z = 0.0f;
 		FVector GunTowerRightDirection = GunTowerComponentToControl->GetRightVector();
 		GunTowerRightDirection.Z = 0.0f;
 
 		if (FVector::DotProduct(GunTowerToMouseDirection, GunTowerRightDirection) < 0)
 		{
-			fSign = -1;
+			fSign = -1; // Mouse pointer is left of gun
 		}
 		else
 		{
-			fSign = 1.0f;
+			fSign = 1.0f; // Mouse pointer is right of gun
 		}
 
-		if (bDebugDrawLineFromTowerToMouse)
+		if (GetOwner())
 		{
-			
+			UE_LOG(LogPlayerTank, Log, TEXT("Tank tower %s z target rotation: %f || rotation direction: %f"), *GetOwner()->GetName(), fCurrentDesiredZTowerRotation, fSign);
+		}
 
-			UE_LOG(LogPlayerTank, Log, TEXT("Mouse loc: %s"), *TargetLocation.ToString());
-
+		if (bDebugDrawLineFromTowerToMouse && GetWorld())
+		{
 			FVector DebugTargetEndPos = TargetLocation;
 			DebugTargetEndPos.Z = GunTowerComponentToControl->GetComponentLocation().Z;
 			DrawDebugLine(GetWorld(), GunTowerComponentToControl->GetComponentLocation(), DebugTargetEndPos, FColor(180.0f, 0.0f, 0.0f), false, -1, 0, 7.1f);
-
 		}
 	}
 }
 
 void UGunControllerComponent::RotateTowardsTarget()
 {
-	EXECUTE_BLOCK_CHECKED(TargetHandlerComponent, LogPlayerTank,
-		TEXT("Tank: %s could not rotate towards target, because the TankTargetHandlerComponent is null"), *GetOwner()->GetName())
+	EXECUTE_BLOCK_CHECKED(GunTowerComponentToControl, LogPlayerTank,
+		TEXT("Tank: %s could not rotate towards target, because the GunTowerComponentToControl is null"), *GetOwner()->GetName())
 	{
 		FRotator GunTowerRotation = GunTowerComponentToControl->GetComponentRotation();
-		float fGunTowerZRotationInDegrees = GunTowerRotation.Euler().Z;
+		float fGunTowerZRotationInDegrees = GunTowerRotation.Euler().Z; // Only z component is relevant for tower rotation
 
-		//float sign = -FMath::Sign(FMath::FindDeltaAngleRadians(fCurrentDesiredZTowerRotation, fGunTowerZRotationInDegrees));
-		float sign = fSign;
-
-	
-
-		FVector AngularRotation = GunTowerRotation.RotateVector(FVector(0, 0, sign * fGunAngularVelocity * GetWorld()->DeltaTimeSeconds));
-		GunTowerComponentToControl->AddWorldRotation(FRotator::MakeFromEuler(AngularRotation));
-
-		UE_LOG(LogPlayerTank, Log, TEXT("sign: %f"), sign);
-		UE_LOG(LogPlayerTank, Log, TEXT("Des z rot: %f"), fCurrentDesiredZTowerRotation);
-		UE_LOG(LogPlayerTank, Log, TEXT("gun z rot: %f"), fGunTowerZRotationInDegrees);
-
-		if (FMath::Abs(fGunTowerZRotationInDegrees - fCurrentDesiredZTowerRotation) < 0.0001f)
+		if (GetWorld())
 		{
-			bRotationIsDirty = false;
-			FVector GunTowerRotationInEulerAngles = GunTowerComponentToControl->GetComponentRotation().Euler();
-			FRotator TargetRotation = FRotator::MakeFromEuler(FVector(GunTowerRotationInEulerAngles.X, GunTowerRotationInEulerAngles.Y, fCurrentDesiredZTowerRotation));
-			GunTowerComponentToControl->SetWorldRotation(TargetRotation);
-			UE_LOG(LogPlayerTank, Log, TEXT("finis"));
-		}
-		else
-		{
-			
+			// Create rotation vector, fSign determines the direction of the rotation
+			FVector AngularRotation = GunTowerRotation.RotateVector(FVector(0, 0, fSign * fGunAngularVelocity * GetWorld()->DeltaTimeSeconds));
+			GunTowerComponentToControl->AddWorldRotation(FRotator::MakeFromEuler(AngularRotation));
+
+			UE_LOG(LogPlayerTank, Log, TEXT("gun z rot: %f || current z rot: %f || z rot diff: %f"), fGunTowerZRotationInDegrees, fCurrentDesiredZTowerRotation, FMath::Abs(fGunTowerZRotationInDegrees - fCurrentDesiredZTowerRotation));
+			if (FMath::Abs(fGunTowerZRotationInDegrees - fCurrentDesiredZTowerRotation) < fAngularTolerance)
+			{
+				bRotationIsDirty = false;
+				// Set tank tower rotation to desired rotation to avoid rotation offset
+				FVector GunTowerRotationInEulerAngles = GunTowerComponentToControl->GetComponentRotation().Euler();
+				FRotator TargetRotation = FRotator::MakeFromEuler(FVector(GunTowerRotationInEulerAngles.X, GunTowerRotationInEulerAngles.Y, fCurrentDesiredZTowerRotation));
+				GunTowerComponentToControl->SetWorldRotation(TargetRotation);
+
+				if (GetOwner())
+				{
+					UE_LOG(LogPlayerTank, Log, TEXT("Tank tower %s finished rotating towards z rotation: %f"), *GetOwner()->GetName(), fCurrentDesiredZTowerRotation);
+				}
+			}
 		}
 	}
 }

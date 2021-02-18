@@ -32,7 +32,10 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	virtual void InitTankController();
+	/**
+	* Sets controller that controls the tank.
+	*/
+	virtual void SetTankController();
 	/**
 	* Called every frame to track a specific target.
 	*/
@@ -47,6 +50,7 @@ private:
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
 		bool bDebugDrawMousePosition = false;
 
+	// The player controller to get the mouse position from
 	UPROPERTY()
 		APlayerController* TankPlayerController;
 };

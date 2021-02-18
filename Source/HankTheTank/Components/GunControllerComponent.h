@@ -9,6 +9,10 @@
 class USceneComponent;
 class UTankTargetHandlerComponent;
 
+/**
+* Component class that handles the tower rotation for a tank entity.
+* Could also be used for handling gun rotation.
+*/
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class HANKTHETANK_API UGunControllerComponent : public UActorComponent
 {
@@ -17,16 +21,24 @@ class HANKTHETANK_API UGunControllerComponent : public UActorComponent
 public:	
 	UGunControllerComponent();
 
+	// Angular velocity the tower rotates towards a target
 	UPROPERTY(EditAnywhere, Category = "Rotation Settings", BlueprintReadWrite)
 		float fGunAngularVelocity;
 	// Angular threshold in degrees at which the tower starts rotating towards the target
 	UPROPERTY(EditAnywhere, Category = "Rotation Settings", BlueprintReadWrite)
 		float fGunAngularThreshold;
+	// Tolerance at which the rotation of the tower will count as finished
+	UPROPERTY(EditAnywhere, Category = "Rotation Settings", BlueprintReadWrite)
+		float fAngularTolerance;
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	/**
+	* Called every frame to determine the angle between the tank tower and a specific target.
+	* Will also set fCurrentDesiredZTowerRotation and fSign.
+	*/
 	virtual void SetCurrentAngleBetweenGunTowerAndTarget();
 
 	bool bRotationIsDirty = false;
@@ -45,9 +57,9 @@ protected:
 	UPROPERTY()
 		UTankTargetHandlerComponent* TargetHandlerComponent;
 
-	
-
-	
+	/**
+	* Called every frame if bRotationIsDirty is true.
+	* Will rotate the tank tower towards fCurrentDesiredZTowerRotation.
+	*/
 	virtual void RotateTowardsTarget();
-	//void ReachedTargetRotation();
 };

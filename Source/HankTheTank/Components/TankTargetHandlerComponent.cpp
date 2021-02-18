@@ -9,7 +9,6 @@
 UTankTargetHandlerComponent::UTankTargetHandlerComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-
 }
 
 AActor* UTankTargetHandlerComponent::GetTargetActor() const
@@ -26,7 +25,7 @@ void UTankTargetHandlerComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	InitTankController();
+	SetTankController();
 }
 
 void UTankTargetHandlerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -35,7 +34,7 @@ void UTankTargetHandlerComponent::TickComponent(float DeltaTime, ELevelTick Tick
 	TrackTarget();
 }
 
-void UTankTargetHandlerComponent::InitTankController()
+void UTankTargetHandlerComponent::SetTankController()
 {
 	APawn* TankPawn = Cast<APawn>(GetOwner());
 	if (TankPawn)
@@ -48,25 +47,30 @@ void UTankTargetHandlerComponent::InitTankController()
 
 void UTankTargetHandlerComponent::TrackTarget()
 {
-	FVector MousePosition, MouseDirection;
-	EXECUTE_FUNC_CHECKED(TankPlayerController, TankPlayerController->DeprojectMousePositionToWorld(MousePosition, MouseDirection), LogPlayerTank,
-		TEXT("Player pawn tank: %s has no PlayerController to retrieve the mouse position in world coordinates!"), *GetOwner()->GetName());
-
-	// Adjust mouse world position, so we still get correct results if the camera is tilted
-	FVector AdjustedMousePosition = FMath::LinePlaneIntersection(
-		MousePosition,
-		MousePosition + (MouseDirection * 50000.f),
-		GetOwner()->GetActorLocation(),
-		FVector{ 0.f, 0.f, 1.f }
-	);
-
-	TargetLocation = AdjustedMousePosition;
-
-	if (bDebugDrawMousePosition)
+	if (GetOwner())
 	{
-		FVector DrawPos = TargetLocation;
-		DrawPos.Z = 200.0f;
-		DrawDebugPoint(GetWorld(), DrawPos, 4.85f, FColor(0, 0, 180), false, 0.1f, 0);
+		FVector MousePosition, MouseDirection;
+		EXECUTE_FUNC_CHECKED(TankPlayerController, TankPlayerController->DeprojectMousePositionToWorld(MousePosition, MouseDirection), LogPlayerTank,
+			TEXT("Player pawn tank: %s has no PlayerController to retrieve the mouse position in world coordinates!"), *GetOwner()->GetName());
+
+		// Adjust mouse world position, so we still get correct results if the camera is tilted
+		// Mouse position will be projected onto the tank plane, so the actual mouse position can be correctly placed in the world
+		// Otherwise it would be directly in front of the camera
+		FVector AdjustedMousePosition = FMath::LinePlaneIntersection(
+			MousePosition,
+			MousePosition + (MouseDirection * 50000.f),
+			GetOwner()->GetActorLocation(),
+			FVector{ 0.f, 0.f, 1.f }
+		);
+
+		TargetLocation = AdjustedMousePosition;
+
+		if (bDebugDrawMousePosition && GetWorld())
+		{
+			FVector DrawPos = TargetLocation;
+			DrawPos.Z = 200.0f;
+			DrawDebugPoint(GetWorld(), DrawPos, 4.85f, FColor(0, 0, 180), false, 0.1f, 0);
+		}
 	}
 }
 
