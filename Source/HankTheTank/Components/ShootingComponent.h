@@ -4,11 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
+#include "../ShootingSystem/ShotType.h"
+#include "../HankTheTankProjectile.h"
 #include "ShootingComponent.generated.h"
 
-class UHankTheTankProjectile;
-
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), Blueprintable )
 class HANKTHETANK_API UShootingComponent : public USceneComponent
 {
 	GENERATED_BODY()
@@ -16,17 +16,18 @@ class HANKTHETANK_API UShootingComponent : public USceneComponent
 public:	
 	UShootingComponent();
 
+	/**
+	* Called when an entity wants to trigger a single shot of a projectile.
+	* @param ShotType - Defines the shot type, to determine which bullet should be fired.
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Gameplay")
+		void InvokeShotByShotType(const EShotType ShotType);
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	// TODO: use enum for type
-	 /**
-	 * Called when an entity wants to trigger a single shot of a projectile.
-	 * @param ShotType - Defines the shot type, to determine which bullet should be fired.
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Gameplay")
-		void InvokeShotByShotType(FString ShotType);
-
 private:
+	UPROPERTY(EditDefaultsOnly, Category = "Shots", meta = (AllowPrivateAccess = "true"))
+		TMap<EShotType, TSubclassOf<AHankTheTankProjectile>> ProjectileClassByShotType;
 };

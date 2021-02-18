@@ -18,7 +18,19 @@ void UShootingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-void UShootingComponent::InvokeShotByShotType(FString ShotType)
+void UShootingComponent::InvokeShotByShotType(const EShotType ShotType)
 {
+	if (ProjectileClassByShotType.Contains(ShotType))
+	{
+		TSubclassOf<AHankTheTankProjectile> ProjectileClass = ProjectileClassByShotType[ShotType];
+		
+		if (ProjectileClass && GetWorld())
+		{
+			FActorSpawnParameters spawnParameters;
+			spawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+			GetWorld()->SpawnActor<AHankTheTankProjectile>(ProjectileClass, GetComponentLocation(), GetComponentRotation(), spawnParameters);
+		}
+
+	}
 }
 

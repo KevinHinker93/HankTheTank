@@ -11,6 +11,7 @@ class UTankTargetHandlerComponent;
 class UStaticMeshComponent;
 class USceneComponent;
 class UBoxComponent;
+class UShootingComponent;
 
 // TODO: clean up and create better hierarchy for tank meshes
 
@@ -38,6 +39,7 @@ public:
 	UPROPERTY(Category = Audio, EditAnywhere, BlueprintReadWrite)
 	class USoundBase* FireSound;
 
+	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
@@ -50,8 +52,8 @@ public:
 	// Static names for axis bindings
 	static const FName MoveForwardBinding;
 	static const FName MoveRightBinding;
-	static const FName FireForwardBinding;
-	static const FName FireRightBinding;
+	static const FName FireMissileBinding;
+	static const FName FireRocketBinding;
 
 private:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
@@ -68,6 +70,15 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gameplay", meta = (AllowPrivateAccess = "true"))
 		UTankTargetHandlerComponent* TargetHandlerComponent;
+
+	UFUNCTION()
+		void OnFireMissile();
+
+	UFUNCTION()
+		void OnFireRocket();
+
+	UPROPERTY()
+		UShootingComponent* ShootingComponent;
 
 	/* Flag to control firing  */
 	uint32 bCanFire : 1;

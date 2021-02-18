@@ -12,15 +12,19 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Engine/CollisionProfile.h"
 #include "Engine/StaticMesh.h"
+#include "Utility/StaticHelperFunctions.h"
+#include "Utility/LogCategoryDefinitions.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/ShootingComponent.h"
 #include "Sound/SoundBase.h"
+#include "ShootingSystem/ShotType.h"
 #include "Components/GunControllerComponent.h"
 #include "Components/TankTargetHandlerComponent.h"
 
 const FName AHankTheTankPawn::MoveForwardBinding("MoveForward");
 const FName AHankTheTankPawn::MoveRightBinding("MoveRight");
-const FName AHankTheTankPawn::FireForwardBinding("FireForward");
-const FName AHankTheTankPawn::FireRightBinding("FireRight");
+const FName AHankTheTankPawn::FireMissileBinding("FireMissile");
+const FName AHankTheTankPawn::FireRocketBinding("FireRocket");
 
 AHankTheTankPawn::AHankTheTankPawn()
 {	
@@ -61,8 +65,16 @@ void AHankTheTankPawn::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 	// set up gameplay key bindings
 	PlayerInputComponent->BindAxis(MoveForwardBinding);
 	PlayerInputComponent->BindAxis(MoveRightBinding);
-	PlayerInputComponent->BindAxis(FireForwardBinding);
-	PlayerInputComponent->BindAxis(FireRightBinding);
+	PlayerInputComponent->BindAction("FireMissile", IE_Released, this, &AHankTheTankPawn::OnFireMissile);
+	PlayerInputComponent->BindAction("FireRocket", IE_Released, this, &AHankTheTankPawn::OnFireRocket);
+}
+
+void AHankTheTankPawn::BeginPlay()
+{
+	Super::BeginPlay();
+
+	GET_OBJ_CHECKED(ShootingComponent, UStaticHelperFunctions::GetActorCompAs<UShootingComponent>(this), LogPlayerTank,
+		TEXT("Tank %s could not fetch shooting component, have you forgot to set one?"), *GetName());
 }
 
 void AHankTheTankPawn::Tick(float DeltaSeconds)
@@ -90,13 +102,13 @@ void AHankTheTankPawn::Tick(float DeltaSeconds)
 		GunControllerComponent->PreserveOriginalTowerRotation(fTankTowerZRot);
 	}
 	
-	// Create fire direction vector
-	const float FireForwardValue = GetInputAxisValue(FireForwardBinding);
-	const float FireRightValue = GetInputAxisValue(FireRightBinding);
-	const FVector FireDirection = FVector(FireForwardValue, FireRightValue, 0.f);
+	//// Create fire direction vector
+	//const float FireForwardValue = GetInputAxisValue(FireForwardBinding);
+	//const float FireRightValue = GetInputAxisValue(FireRightBinding);
+	//const FVector FireDirection = FVector(FireForwardValue, FireRightValue, 0.f);
 
-	// Try and fire a shot
-	FireShot(FireDirection);
+	//// Try and fire a shot
+	//FireShot(FireDirection);
 }
 
 void AHankTheTankPawn::FireShot(FVector FireDirection)
@@ -135,5 +147,15 @@ void AHankTheTankPawn::FireShot(FVector FireDirection)
 void AHankTheTankPawn::ShotTimerExpired()
 {
 	bCanFire = true;
+}
+
+void AHankTheTankPawn::OnFireMissile()
+{
+	ShootingComponent->InvokeShotByShotType(EShotType::EMissile);
+}
+
+void AHankTheTankPawn::OnFireRocket()
+{
+	ShootingComponent->InvokeShotByShotType(EShotType::ERocket);
 }
 
