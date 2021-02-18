@@ -31,6 +31,7 @@ protected:
 
 	bool bRotationIsDirty = false;
 	float fCurrentDesiredZTowerRotation = 0.0f;
+	float fSign = 1.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Debug", meta = (AllowPrivateAccess = "true"))
 		bool bDebugDrawLineFromTowerToMouse = false;

@@ -58,14 +58,32 @@ void UGunControllerComponent::SetCurrentAngleBetweenGunTowerAndTarget()
 		FRotator LookAtTargetRotation = UKismetMathLibrary::FindLookAtRotation(GunTowerComponentToControl->GetComponentLocation(), TargetLocation);
 		fCurrentDesiredZTowerRotation = LookAtTargetRotation.Euler().Z;
 
+		if (fCurrentDesiredZTowerRotation < 0)
+		{
+			fCurrentDesiredZTowerRotation = 360 + fCurrentDesiredZTowerRotation;
+		}
+
+		FVector GunTowerLocation = GunTowerComponentToControl->GetComponentLocation();
+		GunTowerLocation.Z = 0.0f;
+		FVector GunTowerToMouseDirection = TargetLocation - GunTowerLocation;
+		GunTowerToMouseDirection.Normalize();
+		FVector GunTowerFacingDirection = GunTowerComponentToControl->GetForwardVector();
+		GunTowerFacingDirection.Z = 0.0f;
+		FVector GunTowerRightDirection = GunTowerComponentToControl->GetRightVector();
+		GunTowerRightDirection.Z = 0.0f;
+
+		if (FVector::DotProduct(GunTowerToMouseDirection, GunTowerRightDirection) < 0)
+		{
+			fSign = -1;
+		}
+		else
+		{
+			fSign = 1.0f;
+		}
+
 		if (bDebugDrawLineFromTowerToMouse)
 		{
-			FVector GunTowerLocation = GunTowerComponentToControl->GetComponentLocation();
-			GunTowerLocation.Z = 0.0f;
-			FVector GunTowerToMouseDirection = TargetLocation - GunTowerLocation;
-			GunTowerToMouseDirection.Normalize();
-			FVector GunTowerFacingDirection = GunTowerComponentToControl->GetForwardVector();
-			GunTowerFacingDirection.Z = 0.0f;
+			
 
 			UE_LOG(LogPlayerTank, Log, TEXT("Mouse loc: %s"), *TargetLocation.ToString());
 
@@ -85,17 +103,29 @@ void UGunControllerComponent::RotateTowardsTarget()
 		FRotator GunTowerRotation = GunTowerComponentToControl->GetComponentRotation();
 		float fGunTowerZRotationInDegrees = GunTowerRotation.Euler().Z;
 
-		if (FMath::Abs(fGunTowerZRotationInDegrees - fCurrentDesiredZTowerRotation) < fGunAngularThreshold)
+		//float sign = -FMath::Sign(FMath::FindDeltaAngleRadians(fCurrentDesiredZTowerRotation, fGunTowerZRotationInDegrees));
+		float sign = fSign;
+
+	
+
+		FVector AngularRotation = GunTowerRotation.RotateVector(FVector(0, 0, sign * fGunAngularVelocity * GetWorld()->DeltaTimeSeconds));
+		GunTowerComponentToControl->AddWorldRotation(FRotator::MakeFromEuler(AngularRotation));
+
+		UE_LOG(LogPlayerTank, Log, TEXT("sign: %f"), sign);
+		UE_LOG(LogPlayerTank, Log, TEXT("Des z rot: %f"), fCurrentDesiredZTowerRotation);
+		UE_LOG(LogPlayerTank, Log, TEXT("gun z rot: %f"), fGunTowerZRotationInDegrees);
+
+		if (FMath::Abs(fGunTowerZRotationInDegrees - fCurrentDesiredZTowerRotation) < 0.0001f)
 		{
 			bRotationIsDirty = false;
 			FVector GunTowerRotationInEulerAngles = GunTowerComponentToControl->GetComponentRotation().Euler();
-			FRotator TargetRotation = FRotator::MakeFromEuler(FVector(GunTowerRotationInEulerAngles.X, GunTowerRotationInEulerAngles.Y, fGunTowerZRotationInDegrees));
+			FRotator TargetRotation = FRotator::MakeFromEuler(FVector(GunTowerRotationInEulerAngles.X, GunTowerRotationInEulerAngles.Y, fCurrentDesiredZTowerRotation));
+			GunTowerComponentToControl->SetWorldRotation(TargetRotation);
+			UE_LOG(LogPlayerTank, Log, TEXT("finis"));
 		}
 		else
 		{
-			float sign = -FMath::Sign(FMath::FindDeltaAngleRadians(fCurrentDesiredZTowerRotation, fGunTowerZRotationInDegrees));
-			FVector AngularRotation = GunTowerRotation.RotateVector(FVector(0, 0, sign * fGunAngularVelocity * GetWorld()->DeltaTimeSeconds));
-			GunTowerComponentToControl->AddWorldRotation(FRotator::MakeFromEuler(AngularRotation));
+			
 		}
 	}
 }
