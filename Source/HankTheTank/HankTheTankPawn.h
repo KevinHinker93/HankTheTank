@@ -10,6 +10,7 @@ class UGunControllerComponent;
 class UTankTargetHandlerComponent;
 class UStaticMeshComponent;
 class USceneComponent;
+class UBoxComponent;
 
 // TODO: clean up and create better hierarchy for tank meshes
 
@@ -63,8 +64,10 @@ public:
 	static const FName FireRightBinding;
 
 private:
+	/*UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
+		UBoxComponent* TankRootSceneComponent;
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
-		USceneComponent* TankRootSceneComponent;
+		USceneComponent* TankMovementSceneComponent;*/
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
 		UStaticMeshComponent* TankMovementMeshComponent;
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))

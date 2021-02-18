@@ -8,6 +8,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/SceneComponent.h"
 #include "Components/InputComponent.h"
+#include "Components/BoxComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Engine/CollisionProfile.h"
 #include "Engine/StaticMesh.h"
@@ -28,11 +29,15 @@ AHankTheTankPawn::AHankTheTankPawn()
 
 	
 
-	TankRootSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("TankRoot"));
+	/*TankRootSceneComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("TankRoot"));
 	RootComponent = TankRootSceneComponent;
 
+	TankMovementSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("TankMovementRoot"));
+	TankMovementSceneComponent->SetupAttachment(RootComponent);*/
+
 	TankMovementMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TankMovementMesh"));
-	TankMovementMeshComponent->SetupAttachment(RootComponent);
+	RootComponent = TankMovementMeshComponent;
+	//TankMovementMeshComponent->SetupAttachment(TankMovementSceneComponent);
 
 	TankTowerSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("TankTowerRoot"));
 	TankTowerSceneComponent->SetupAttachment(RootComponent);
@@ -106,16 +111,14 @@ void AHankTheTankPawn::Tick(float DeltaSeconds)
 	// If non-zero size, move this actor
 	if (Movement.SizeSquared() > 0.0f)
 	{
+		const float fTankTowerZRot = TankTowerSceneComponent->GetComponentRotation().Euler().Z;
 		const FRotator NewRotation = Movement.Rotation();
 		FHitResult Hit(1.f);
-		RootComponent->MoveComponent(Movement, NewRotation, false, &Hit);
 		
-		/*if (Hit.IsValidBlockingHit())
-		{
-			const FVector Normal2D = Hit.Normal.GetSafeNormal2D();
-			const FVector Deflection = FVector::VectorPlaneProject(Movement, Normal2D) * (1.f - Hit.Time);
-			RootComponent->MoveComponent(Deflection, NewRotation, true);
-		}*/
+		RootComponent->MoveComponent(Movement, NewRotation, true, &Hit);
+
+		// Preserve gun tower rotation so it is facing same direction before a movement direction change
+		GunControllerComponent->PreserveOriginalTowerRotation(fTankTowerZRot);
 	}
 	
 	// Create fire direction vector

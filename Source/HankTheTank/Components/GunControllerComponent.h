@@ -31,6 +31,11 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Rotation Settings", BlueprintReadWrite)
 		float fAngularTolerance;
 
+	/**
+	* Called every frame to ensure the tower rotations remains the same although the owning actor's rotation has changed.
+	*/
+	void PreserveOriginalTowerRotation(const float fPreviousTankZTowerRot);
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

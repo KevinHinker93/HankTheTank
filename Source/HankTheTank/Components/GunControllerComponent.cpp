@@ -13,6 +13,13 @@ UGunControllerComponent::UGunControllerComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
+void UGunControllerComponent::PreserveOriginalTowerRotation(const float fPreviousTankZTowerRot)
+{
+	FVector towerRot = GunTowerComponentToControl->GetComponentRotation().Euler();
+	towerRot.Z = fPreviousTankZTowerRot;
+	GunTowerComponentToControl->SetWorldRotation(FRotator::MakeFromEuler(towerRot));
+}
+
 void UGunControllerComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -102,7 +109,7 @@ void UGunControllerComponent::RotateTowardsTarget()
 		{
 			// Create rotation vector, fSign determines the direction of the rotation
 			FVector AngularRotation = GunTowerRotation.RotateVector(FVector(0, 0, fSign * fGunAngularVelocity * GetWorld()->DeltaTimeSeconds));
-			GunTowerComponentToControl->AddWorldRotation(FRotator::MakeFromEuler(AngularRotation));
+			GunTowerComponentToControl->AddWorldRotation(FRotator::MakeFromEuler(AngularRotation), false);
 
 			UE_LOG(LogPlayerTank, Log, TEXT("gun z rot: %f || current z rot: %f || z rot diff: %f"), fGunTowerZRotationInDegrees, fCurrentDesiredZTowerRotation, FMath::Abs(fGunTowerZRotationInDegrees - fCurrentDesiredZTowerRotation));
 			if (FMath::Abs(fGunTowerZRotationInDegrees - fCurrentDesiredZTowerRotation) < fAngularTolerance)
