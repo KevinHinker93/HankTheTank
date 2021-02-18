@@ -24,20 +24,8 @@ const FName AHankTheTankPawn::FireRightBinding("FireRight");
 
 AHankTheTankPawn::AHankTheTankPawn()
 {	
-	//static ConstructorHelpers::FObjectFinder<UStaticMesh> ShipMesh(TEXT("/Game/TwinStick/Meshes/TwinStickUFO.TwinStickUFO"));
-	// Create the mesh component
-
-	
-
-	/*TankRootSceneComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("TankRoot"));
-	RootComponent = TankRootSceneComponent;
-
-	TankMovementSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("TankMovementRoot"));
-	TankMovementSceneComponent->SetupAttachment(RootComponent);*/
-
 	TankMovementMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TankMovementMesh"));
 	RootComponent = TankMovementMeshComponent;
-	//TankMovementMeshComponent->SetupAttachment(TankMovementSceneComponent);
 
 	TankTowerSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("TankTowerRoot"));
 	TankTowerSceneComponent->SetupAttachment(RootComponent);
@@ -47,29 +35,10 @@ AHankTheTankPawn::AHankTheTankPawn()
 
 	TankGunMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TankGunMesh"));
 	TankGunMeshComponent->SetupAttachment(TankTowerSceneComponent);
-
-
-	/*ShipMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ShipMesh"));
-	RootComponent = ShipMeshComponent;
-	ShipMeshComponent->SetCollisionProfileName(UCollisionProfile::Pawn_ProfileName);
-	ShipMeshComponent->SetStaticMesh(ShipMesh.Object);*/
 	
 	// Cache our sound effect
 	static ConstructorHelpers::FObjectFinder<USoundBase> FireAudio(TEXT("/Game/TwinStick/Audio/TwinStickFire.TwinStickFire"));
 	FireSound = FireAudio.Object;
-
-	//// Create a camera boom...
-	//CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	//CameraBoom->SetupAttachment(RootComponent);
-	//CameraBoom->SetUsingAbsoluteRotation(true); // Don't want arm to rotate when ship does
-	//CameraBoom->TargetArmLength = 1200.f;
-	//CameraBoom->SetRelativeRotation(FRotator(-80.f, 0.f, 0.f));
-	//CameraBoom->bDoCollisionTest = false; // Don't want to pull camera in when it collides with level
-
-	//// Create a camera...
-	//CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("TopDownCamera"));
-	//CameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	//CameraComponent->bUsePawnControlRotation = false;	// Camera does not rotate relative to arm
 
 	// Create gun controller
 	GunControllerComponent = CreateDefaultSubobject<UGunControllerComponent>(TEXT("GunController"));

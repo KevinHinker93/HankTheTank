@@ -38,18 +38,8 @@ public:
 	UPROPERTY(Category = Audio, EditAnywhere, BlueprintReadWrite)
 	class USoundBase* FireSound;
 
-	/** Returns ShipMeshComponent subobject **/
-	//FORCEINLINE UStaticMeshComponent* GetShipMeshComponent() const { return ShipMeshComponent; }
-	
-	///** Returns CameraComponent subobject **/
-	//FORCEINLINE class UCameraComponent* GetCameraComponent() const { return CameraComponent; }
-	///** Returns CameraBoom subobject **/
-	//FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
-
-	// Begin Actor Interface
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
-	// End Actor Interface
 
 	/* Fire a shot in the specified direction */
 	void FireShot(FVector FireDirection);
@@ -64,10 +54,6 @@ public:
 	static const FName FireRightBinding;
 
 private:
-	/*UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
-		UBoxComponent* TankRootSceneComponent;
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
-		USceneComponent* TankMovementSceneComponent;*/
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
 		UStaticMeshComponent* TankMovementMeshComponent;
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
@@ -76,21 +62,10 @@ private:
 		UStaticMeshComponent* TankTowerMeshComponent;
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
 		UStaticMeshComponent* TankGunMeshComponent;
-	
 
-	///** The camera */
-	//UPROPERTY(Category = Camera, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	//	class UCameraComponent* CameraComponent;
-
-	///** Camera boom positioning the camera above the character */
-	//UPROPERTY(Category = Camera, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	//	class USpringArmComponent* CameraBoom;
-
-	/* The mesh component */
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Gameplay", meta = (AllowPrivateAccess = "true"))
 		UGunControllerComponent* GunControllerComponent;
 
-	/** The camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gameplay", meta = (AllowPrivateAccess = "true"))
 		UTankTargetHandlerComponent* TargetHandlerComponent;
 
