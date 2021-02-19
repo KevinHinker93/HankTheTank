@@ -8,6 +8,7 @@
 
 class UProjectileMovementComponent;
 class UStaticMeshComponent;
+class UParticleSystem;
 
 UCLASS(config=Game)
 class AHankTheTankProjectile : public AActor
@@ -17,14 +18,21 @@ class AHankTheTankProjectile : public AActor
 public:
 	AHankTheTankProjectile();
 
-	/** Function to handle the projectile hitting something */
-	UFUNCTION()
-		virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+		float fBaseImpulseImpactStrength = 25.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage")
+		TSubclassOf<UDamageType> ProjectileDamageTypeClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Explosion")
+		UParticleSystem* ExplosionParticle;
 
 	/** Returns ProjectileMesh subobject **/
 	FORCEINLINE UStaticMeshComponent* GetProjectileMesh() const { return ProjectileMesh; }
 	/** Returns ProjectileMovement subobject **/
 	FORCEINLINE UProjectileMovementComponent* GetProjectileMovement() const { return ProjectileMovement; }
+
+	virtual void Explode(bool bShouldDestroyParticle);
 
 protected:
 	virtual void BeginPlay();
@@ -35,5 +43,16 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 		UProjectileMovementComponent* ProjectileMovement;
+
+	virtual void OnProjectileHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	virtual void OnProjectileOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
+
+private:
+	UFUNCTION()
+		void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	UFUNCTION()
+		void OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+			UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
 };
 

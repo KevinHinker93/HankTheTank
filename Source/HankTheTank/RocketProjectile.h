@@ -13,7 +13,7 @@ class HANKTHETANK_API ARocketProjectile : public AHankTheTankProjectile
 {
 	GENERATED_BODY()
 
-		ARocketProjectile();
+	ARocketProjectile();
 
 public:
 	UPROPERTY(EditDefaultsOnly, Category = "Movement Settings")
@@ -23,9 +23,14 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Movement Settings")
 		float fTimeToReachMaxVelocityInSeconds = 2.0f;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Explosion")
+		float fExplosionRadius = 3.0f;
+
 protected:
 	virtual void BeginPlay();
 	virtual void Tick(float DeltaSeconds) override;
+
+	virtual void OnProjectileHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) override;
 
 private:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Collider, meta = (AllowPrivateAccess = "true"))
