@@ -8,8 +8,10 @@ AShootingTarget::AShootingTarget()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
+	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("TargetRoot"));
+
 	TargetActorMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TargetActorMesh"));
-	RootComponent = TargetActorMeshComponent;
+	TargetActorMeshComponent->SetupAttachment(RootComponent);
 	TargetActorMeshComponent->BodyInstance.SetCollisionProfileName("Enemy");
 }
 

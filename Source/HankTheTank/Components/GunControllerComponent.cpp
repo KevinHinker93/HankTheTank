@@ -83,11 +83,6 @@ void UGunControllerComponent::SetCurrentAngleBetweenGunTowerAndTarget()
 			fSign = 1.0f; // Mouse pointer is right of gun
 		}
 
-		if (GetOwner())
-		{
-			UE_LOG(LogPlayerTank, Log, TEXT("Tank tower %s z target rotation: %f || rotation direction: %f"), *GetOwner()->GetName(), fCurrentDesiredZTowerRotation, fSign);
-		}
-
 		if (bDebugDrawLineFromTowerToMouse && GetWorld())
 		{
 			FVector DebugTargetEndPos = TargetLocation;
@@ -111,7 +106,6 @@ void UGunControllerComponent::RotateTowardsTarget()
 			FVector AngularRotation = GunTowerRotation.RotateVector(FVector(0, 0, fSign * fGunAngularVelocity * GetWorld()->DeltaTimeSeconds));
 			GunTowerComponentToControl->AddWorldRotation(FRotator::MakeFromEuler(AngularRotation), false);
 
-			UE_LOG(LogPlayerTank, Log, TEXT("gun z rot: %f || current z rot: %f || z rot diff: %f"), fGunTowerZRotationInDegrees, fCurrentDesiredZTowerRotation, FMath::Abs(fGunTowerZRotationInDegrees - fCurrentDesiredZTowerRotation));
 			if (FMath::Abs(fGunTowerZRotationInDegrees - fCurrentDesiredZTowerRotation) < fAngularTolerance)
 			{
 				bRotationIsDirty = false;
@@ -119,11 +113,6 @@ void UGunControllerComponent::RotateTowardsTarget()
 				FVector GunTowerRotationInEulerAngles = GunTowerComponentToControl->GetComponentRotation().Euler();
 				FRotator TargetRotation = FRotator::MakeFromEuler(FVector(GunTowerRotationInEulerAngles.X, GunTowerRotationInEulerAngles.Y, fCurrentDesiredZTowerRotation));
 				GunTowerComponentToControl->SetWorldRotation(TargetRotation);
-
-				if (GetOwner())
-				{
-					UE_LOG(LogPlayerTank, Log, TEXT("Tank tower %s finished rotating towards z rotation: %f"), *GetOwner()->GetName(), fCurrentDesiredZTowerRotation);
-				}
 			}
 		}
 	}

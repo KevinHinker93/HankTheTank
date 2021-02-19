@@ -54,7 +54,7 @@ void ARocketProjectile::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* Ot
 
 	Explode(true);
 }
-
+// TODO: assign to on death of homing actor so it can acquire a new target, and find closest homing target
 void ARocketProjectile::OnDetectionTriggerOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -63,12 +63,13 @@ void ARocketProjectile::OnDetectionTriggerOverlap(UPrimitiveComponent* Overlappe
 
 void ARocketProjectile::OnStartHoming(const AActor* HomingTarget)
 {
+	HomingDetectionTriggerComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	ProjectileMovement->bIsHomingProjectile = true;
 	ProjectileMovement->HomingTargetComponent = HomingTarget->GetRootComponent();
 }
 
 void ARocketProjectile::SetProjectileVelocity(const float fVelocity)
 {
-	ProjectileMovement->SetVelocityInLocalSpace(FVector::ForwardVector * fVelocity);
+	ProjectileMovement->Velocity += (GetActorForwardVector() * (fVelocity - ProjectileMovement->Velocity.Size()));
 	ProjectileMovement->MaxSpeed = fVelocity;
 }

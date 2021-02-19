@@ -8,6 +8,8 @@
 #include "../HankTheTankProjectile.h"
 #include "ShootingComponent.generated.h"
 
+// TODO: implement shoot cooldown
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), Blueprintable )
 class HANKTHETANK_API UShootingComponent : public USceneComponent
 {
