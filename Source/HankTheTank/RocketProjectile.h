@@ -23,6 +23,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Movement Settings")
 		float fTimeToReachMaxVelocityInSeconds = 2.0f;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Movement Settings")
+		bool bSeekNearestTarget = true;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Explosion")
 		float fExplosionRadius = 3.0f;
 
@@ -47,4 +50,5 @@ private:
 			UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
 
 	void SetProjectileVelocity(const float fVelocity);
+	bool IsTargetBlockedByAnObstacle(const AActor* Target);
 };

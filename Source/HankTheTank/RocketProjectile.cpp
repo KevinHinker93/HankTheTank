@@ -64,7 +64,10 @@ void ARocketProjectile::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* Ot
 void ARocketProjectile::OnDetectionTriggerOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	OnStartHoming(OtherActor);
+	if (OtherActor && !IsTargetBlockedByAnObstacle(OtherActor))
+	{
+		OnStartHoming(OtherActor);
+	}
 }
 
 void ARocketProjectile::OnStartHoming(const AActor* HomingTarget)
@@ -85,4 +88,24 @@ void ARocketProjectile::SetProjectileVelocity(const float fVelocity)
 		ProjectileMovement->Velocity += (GetActorForwardVector() * (fVelocity - ProjectileMovement->Velocity.Size()));
 		ProjectileMovement->MaxSpeed = fVelocity;
 	}
+}
+
+bool ARocketProjectile::IsTargetBlockedByAnObstacle(const AActor* Target)
+{
+
+	FHitResult HitResult;
+	FVector StartLocation = GetActorLocation();
+	FVector EndLocation = Target->GetActorLocation();
+
+
+	FCollisionQueryParams TraceParams;
+	TraceParams.AddIgnoredActor(Target);
+	TraceParams.AddIgnoredActor(this);
+
+	bool const bHitStaticObj = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECollisionChannel::ECC_WorldStatic, TraceParams);
+
+	if (bHitStaticObj)
+		UE_LOG(LogTemp, Error, TEXT("hit obstacle"));
+
+	return bHitStaticObj;
 }
