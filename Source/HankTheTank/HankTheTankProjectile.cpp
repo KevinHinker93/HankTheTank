@@ -2,53 +2,53 @@
 
 #include "HankTheTankProjectile.h"
 #include "GameFramework/ProjectileMovementComponent.h"
-#include "UObject/ConstructorHelpers.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Engine/StaticMesh.h"
+#include "Utility/StaticHelperFunctions.h"
+#include "Utility/LogCategoryDefinitions.h"
 
 AHankTheTankProjectile::AHankTheTankProjectile() 
 {
-	// Static reference to the mesh to use for the projectile
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> ProjectileMeshAsset(TEXT("/Game/TwinStick/Meshes/TwinStickProjectile.TwinStickProjectile"));
-
-	// Create mesh component for the projectile sphere
 	ProjectileMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ProjectileMesh0"));
-	ProjectileMesh->SetStaticMesh(ProjectileMeshAsset.Object);
 	ProjectileMesh->SetupAttachment(RootComponent);
 	ProjectileMesh->BodyInstance.SetCollisionProfileName("Projectile");
-			// set up a notification for when this component hits something
+
 	RootComponent = ProjectileMesh;
 
-	// Use a ProjectileMovementComponent to govern this projectile's movement
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement0"));
 	ProjectileMovement->UpdatedComponent = ProjectileMesh;
 	ProjectileMovement->InitialSpeed = 3000.f;
 	ProjectileMovement->MaxSpeed = 3000.f;
 	ProjectileMovement->bRotationFollowsVelocity = true;
 	ProjectileMovement->bShouldBounce = false;
-	ProjectileMovement->ProjectileGravityScale = 0.f; // No gravity
-
-	// Die after 3 seconds by default
-	//InitialLifeSpan = 3.0f;
+	ProjectileMovement->ProjectileGravityScale = 0.f;
 }
 
 void AHankTheTankProjectile::Explode(bool bShouldDestroyParticle)
 {
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionParticle, GetActorLocation(), GetActorRotation());
-
-	if (bShouldDestroyParticle)
+	EXECUTE_BLOCK_CHECKED(GetWorld(), LogPlayerTank, TEXT("Projectile %s could not explode, because world was null"), *GetName())
 	{
-		Destroy();
+		FVector ExplosionLocation = GetActorLocation();
+		FRotator ExplosionRotation = GetActorRotation();
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionParticle, ExplosionLocation, ExplosionRotation);
+
+		if (bShouldDestroyParticle)
+		{
+			Destroy();
+		}
 	}
 }
 
 void AHankTheTankProjectile::BeginPlay()
 {
 	Super::BeginPlay();
-	ProjectileMesh->OnComponentHit.AddDynamic(this, &AHankTheTankProjectile::OnHit);
-	ProjectileMesh->OnComponentBeginOverlap.AddDynamic(this, &AHankTheTankProjectile::OnOverlap);
+
+	EXECUTE_BLOCK_CHECKED(ProjectileMesh, LogPlayerTank, TEXT("Projectile %s could not bind to collision events, because collider component was null"), *GetName())
+	{
+		ProjectileMesh->OnComponentHit.AddDynamic(this, &AHankTheTankProjectile::OnHit);
+		ProjectileMesh->OnComponentBeginOverlap.AddDynamic(this, &AHankTheTankProjectile::OnOverlap);
+	}
 }
 
 void AHankTheTankProjectile::Tick(float DeltaSeconds)

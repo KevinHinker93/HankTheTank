@@ -4,6 +4,7 @@
 #include "RocketProjectile.h"
 #include "Components/SphereComponent.h"
 #include "Utility/LogCategoryDefinitions.h"
+#include "Utility/StaticHelperFunctions.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
 ARocketProjectile::ARocketProjectile()
@@ -20,7 +21,9 @@ void ARocketProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 
-	HomingDetectionTriggerComponent->OnComponentBeginOverlap.AddDynamic(this, &ARocketProjectile::OnDetectionTriggerOverlap);
+	EXECUTE_FUNC_CHECKED(HomingDetectionTriggerComponent, HomingDetectionTriggerComponent->OnComponentBeginOverlap.AddDynamic(this, &ARocketProjectile::OnDetectionTriggerOverlap),
+		LogPlayerController, TEXT("Projectile %s could not bind to the detection radius overlap event, because it was null"), *GetName());
+
 	SetProjectileVelocity(fStartingVelocity);
 }
 
@@ -28,18 +31,21 @@ void ARocketProjectile::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	float fCurrentProjectileForwardVelocity = ProjectileMovement->Velocity.Size();
-	if (fCurrentProjectileForwardVelocity < fMaxVelocity)
+	EXECUTE_BLOCK_CHECKED(ProjectileMovement, LogPlayerTank, TEXT("Cannot adjust velocity of %s, becuase ProjectileMovement is null"), *GetName())
 	{
-		if (fTimeToReachMaxVelocityInSeconds > 0.0f)
+		float fCurrentProjectileForwardVelocity = ProjectileMovement->Velocity.Size();
+		if (fCurrentProjectileForwardVelocity < fMaxVelocity)
 		{
-			float fVelocityGainPerSecond = ((fMaxVelocity - fStartingVelocity) / fTimeToReachMaxVelocityInSeconds) * DeltaSeconds;
-			float fNewProjectileVelocity = FMath::Min(fCurrentProjectileForwardVelocity + fVelocityGainPerSecond, fMaxVelocity);
-			SetProjectileVelocity(fNewProjectileVelocity);
-		}
-		else
-		{
-			UE_LOG(LogPlayerTank, Log, TEXT("Cannot adjust velocity of %s, becuase fTimeToReachMaxVelocityInSeconds is 0.0f"), *GetName());
+			if (fTimeToReachMaxVelocityInSeconds > 0.0f)
+			{
+				float fVelocityGainPerSecond = ((fMaxVelocity - fStartingVelocity) / fTimeToReachMaxVelocityInSeconds) * DeltaSeconds;
+				float fNewProjectileVelocity = FMath::Min(fCurrentProjectileForwardVelocity + fVelocityGainPerSecond, fMaxVelocity);
+				SetProjectileVelocity(fNewProjectileVelocity);
+			}
+			else
+			{
+				UE_LOG(LogPlayerTank, Log, TEXT("Cannot adjust velocity of %s, becuase fTimeToReachMaxVelocityInSeconds is 0.0f"), *GetName());
+			}
 		}
 	}
 }
@@ -64,12 +70,19 @@ void ARocketProjectile::OnDetectionTriggerOverlap(UPrimitiveComponent* Overlappe
 void ARocketProjectile::OnStartHoming(const AActor* HomingTarget)
 {
 	HomingDetectionTriggerComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	ProjectileMovement->bIsHomingProjectile = true;
-	ProjectileMovement->HomingTargetComponent = HomingTarget->GetRootComponent();
+
+	EXECUTE_BLOCK_CHECKED(ProjectileMovement, LogPlayerTank, TEXT("Projectile %s cannot start homing, becuase ProjectileMovement is null"), *GetName())
+	{
+		ProjectileMovement->bIsHomingProjectile = true;
+		ProjectileMovement->HomingTargetComponent = HomingTarget->GetRootComponent();
+	}
 }
 
 void ARocketProjectile::SetProjectileVelocity(const float fVelocity)
 {
-	ProjectileMovement->Velocity += (GetActorForwardVector() * (fVelocity - ProjectileMovement->Velocity.Size()));
-	ProjectileMovement->MaxSpeed = fVelocity;
+	EXECUTE_BLOCK_CHECKED(ProjectileMovement, LogPlayerTank, TEXT("Cannot set velocity of %s, becuase ProjectileMovement is null"), *GetName())
+	{
+		ProjectileMovement->Velocity += (GetActorForwardVector() * (fVelocity - ProjectileMovement->Velocity.Size()));
+		ProjectileMovement->MaxSpeed = fVelocity;
+	}
 }

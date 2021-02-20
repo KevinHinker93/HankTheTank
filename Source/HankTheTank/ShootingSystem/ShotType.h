@@ -7,6 +7,6 @@
 UENUM(BlueprintType)
 enum class EShotType : uint8
 {
-	EMissile	UMETA(DisplayName = "Missile"),
-	ERocket		UMETA(DisplayName = "Rocket")
+	EMissile		UMETA(DisplayName = "Missile"),
+	EBullet			UMETA(DisplayName = "Bullet")
 };

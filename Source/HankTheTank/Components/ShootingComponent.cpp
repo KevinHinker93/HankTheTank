@@ -3,6 +3,8 @@
 
 #include "ShootingComponent.h"
 #include "../Utility/LogCategoryDefinitions.h"
+#include "../Utility/StaticHelperFunctions.h"
+#include "Kismet/GameplayStatics.h"
 
 UShootingComponent::UShootingComponent()
 {
@@ -19,13 +21,42 @@ void UShootingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
+void UShootingComponent::Shoot(const TSubclassOf<AHankTheTankProjectile> ProjectileClass)
+{
+	if (ProjectileClass && GetWorld())
+	{
+		FActorSpawnParameters spawnParameters;
+		spawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+		FVector SpawnLocation = GetComponentLocation();
+		FRotator SpawnRotation = GetComponentRotation();
+		GetWorld()->SpawnActor<AHankTheTankProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, spawnParameters);
+
+		if (Shotsound != nullptr)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, Shotsound, SpawnLocation);
+		}
+
+		StartCooldown();
+	}
+	else if (GetOwner())
+	{
+		UE_LOG(LogPlayerTank, Warning, TEXT("%s could not fire projectile, because projectile class is null or world is null."), *GetOwner()->GetName());
+	}
+}
+
 void UShootingComponent::StartCooldown()
 {
-	bCanShoot = false;
+	if (GetOwner())
+	{
+		EXECUTE_BLOCK_CHECKED(GetWorld(), LogPlayerTank, TEXT("Could not start cooldown for tank %s, because world was null"), *GetOwner()->GetName())
+		{
+			bCanShoot = false;
 
-	FTimerDelegate CooldownDelegate = FTimerDelegate::CreateUObject(this, &UShootingComponent::OnCooldownEnd);
-	FTimerHandle Handle;
-	GetWorld()->GetTimerManager().SetTimer(Handle, CooldownDelegate, fShootingInterval, false);
+			FTimerDelegate CooldownDelegate = FTimerDelegate::CreateUObject(this, &UShootingComponent::OnCooldownEnd);
+			FTimerHandle Handle;
+			GetWorld()->GetTimerManager().SetTimer(Handle, CooldownDelegate, fShootingInterval, false);
+		}
+	}
 }
 
 void UShootingComponent::OnCooldownEnd()
@@ -41,19 +72,7 @@ void UShootingComponent::InvokeShotByShotType(const EShotType ShotType)
 		if (ProjectileClassByShotType.Contains(ShotType))
 		{
 			TSubclassOf<AHankTheTankProjectile> ProjectileClass = ProjectileClassByShotType[ShotType];
-
-			if (ProjectileClass && GetWorld())
-			{
-				FActorSpawnParameters spawnParameters;
-				spawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-				GetWorld()->SpawnActor<AHankTheTankProjectile>(ProjectileClass, GetComponentLocation(), GetComponentRotation(), spawnParameters);
-				StartCooldown();
-			}
-			else if (GetOwner())
-			{
-				UE_LOG(LogPlayerTank, Warning, TEXT("%s could not fire projectile, because projectile class is null or world is null."), *GetOwner()->GetName());
-			}
-
+			Shoot(ProjectileClass);
 		}
 		else if(GetOwner())
 		{

@@ -8,6 +8,13 @@
 #include "../HankTheTankProjectile.h"
 #include "ShootingComponent.generated.h"
 
+class USoundBase;
+
+/**
+* Component class that handles the ability of an entity to fire specific shot types.
+* All shot types share the same cooldown and audio for simplicity.
+*/
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), Blueprintable )
 class HANKTHETANK_API UShootingComponent : public USceneComponent
 {
@@ -31,10 +38,15 @@ protected:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Audio, meta = (AllowPrivateAccess = "true"))
+		USoundBase* Shotsound;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Shots", meta = (AllowPrivateAccess = "true"))
 		TMap<EShotType, TSubclassOf<AHankTheTankProjectile>> ProjectileClassByShotType;
 
 	bool bCanShoot = true;
+
+	void Shoot(const TSubclassOf<AHankTheTankProjectile> ProjectileClass);
 
 	void StartCooldown();
 	UFUNCTION()

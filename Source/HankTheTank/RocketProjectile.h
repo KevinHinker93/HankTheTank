@@ -7,7 +7,7 @@
 #include "RocketProjectile.generated.h"
 
 class USphereComponent;
-
+// TODO: rename to missile projectile
 UCLASS()
 class HANKTHETANK_API ARocketProjectile : public AHankTheTankProjectile
 {
@@ -26,6 +26,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Explosion")
 		float fExplosionRadius = 3.0f;
 
+	/**
+	* Can be called to let the projectile home to a specified target.
+	*/
+	UFUNCTION(BlueprintCallable)
+		void OnStartHoming(const AActor* HomingTarget);
+
 protected:
 	virtual void BeginPlay();
 	virtual void Tick(float DeltaSeconds) override;
@@ -40,9 +46,5 @@ private:
 		void OnDetectionTriggerOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 			UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
 
-	UFUNCTION()
-		void OnStartHoming(const AActor* HomingTarget);
-
 	void SetProjectileVelocity(const float fVelocity);
-	
 };

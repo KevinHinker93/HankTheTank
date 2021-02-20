@@ -13,8 +13,6 @@ class USceneComponent;
 class UBoxComponent;
 class UShootingComponent;
 
-// TODO: clean up and create better hierarchy for tank meshes
-
 UCLASS(Blueprintable)
 class AHankTheTankPawn : public APawn
 {
@@ -23,37 +21,19 @@ class AHankTheTankPawn : public APawn
 public:
 	AHankTheTankPawn();
 
-	/** Offset from the ships location to spawn projectiles */
-	UPROPERTY(Category = Gameplay, EditAnywhere, BlueprintReadWrite )
-	FVector GunOffset;
-	
-	/* How fast the weapon will fire */
 	UPROPERTY(Category = Gameplay, EditAnywhere, BlueprintReadWrite)
-	float FireRate;
+		float MoveSpeed;
 
-	/* The speed our ship moves around the level */
-	UPROPERTY(Category = Gameplay, EditAnywhere, BlueprintReadWrite)
-	float MoveSpeed;
-
-	/** Sound to play each time we fire */
-	UPROPERTY(Category = Audio, EditAnywhere, BlueprintReadWrite)
-	class USoundBase* FireSound;
-
-	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaSeconds) override;
-	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
-
-	/* Fire a shot in the specified direction */
-	void FireShot(FVector FireDirection);
-
-	/* Handler for the fire timer expiry */
-	void ShotTimerExpired();
-
+protected:
 	// Static names for axis bindings
 	static const FName MoveForwardBinding;
 	static const FName MoveRightBinding;
 	static const FName FireMissileBinding;
 	static const FName FireRocketBinding;
+
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaSeconds) override;
+	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
 private:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
@@ -71,19 +51,18 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gameplay", meta = (AllowPrivateAccess = "true"))
 		UTankTargetHandlerComponent* TargetHandlerComponent;
 
+	// ---------------------------------------
+
+	// Action key binding functions
 	UFUNCTION()
-		void OnFireMissile();
+		void OnTriggerLeftClickFire();
 
 	UFUNCTION()
-		void OnFireRocket();
+		void OnTriggerRightClickFire();
+
+	// --------------------------------------
 
 	UPROPERTY()
 		UShootingComponent* ShootingComponent;
-
-	/* Flag to control firing  */
-	uint32 bCanFire : 1;
-
-	/** Handle for efficient management of ShotTimerExpired timer */
-	FTimerHandle TimerHandle_ShotTimerExpired;
 };
 

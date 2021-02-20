@@ -12,12 +12,12 @@ UGunControllerComponent::UGunControllerComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 }
-
+// TODO: maybe better solution
 void UGunControllerComponent::PreserveOriginalTowerRotation(const float fPreviousTankZTowerRot)
 {
-	FVector towerRot = GunTowerComponentToControl->GetComponentRotation().Euler();
-	towerRot.Z = fPreviousTankZTowerRot;
-	GunTowerComponentToControl->SetWorldRotation(FRotator::MakeFromEuler(towerRot));
+	FVector TowerRot = GunTowerComponentToControl->GetComponentRotation().Euler();
+	TowerRot.Z = fPreviousTankZTowerRot;
+	GunTowerComponentToControl->SetWorldRotation(FRotator::MakeFromEuler(TowerRot));
 }
 
 void UGunControllerComponent::BeginPlay()
@@ -64,30 +64,35 @@ void UGunControllerComponent::SetCurrentAngleBetweenGunTowerAndTarget()
 		FVector TargetLocation = TargetHandlerComponent->GetTargetLocation();
 		TargetLocation.Z = 0.0f; // z component not neccessary for calculations
 
-		FRotator LookAtTargetRotation = UKismetMathLibrary::FindLookAtRotation(GunTowerComponentToControl->GetComponentLocation(), TargetLocation);
-		fCurrentDesiredZTowerRotation = LookAtTargetRotation.Euler().Z; // Only z component is relevant for tower rotation
-
-		FVector GunTowerLocation = GunTowerComponentToControl->GetComponentLocation();
-		GunTowerLocation.Z = 0.0f;
-		FVector GunTowerToMouseDirection = TargetLocation - GunTowerLocation;
-		GunTowerToMouseDirection.Normalize();
-		FVector GunTowerRightDirection = GunTowerComponentToControl->GetRightVector();
-		GunTowerRightDirection.Z = 0.0f;
-
-		if (FVector::DotProduct(GunTowerToMouseDirection, GunTowerRightDirection) < 0)
+		EXECUTE_BLOCK_CHECKED(GunTowerComponentToControl, LogPlayerTank,
+			TEXT("Tank: %s could not calculate tower to mouse angle, because the GunTowerComponentToControl is null"), *GetOwner()->GetName())
 		{
-			fSign = -1; // Mouse pointer is left of gun
-		}
-		else
-		{
-			fSign = 1.0f; // Mouse pointer is right of gun
-		}
 
-		if (bDebugDrawLineFromTowerToMouse && GetWorld())
-		{
-			FVector DebugTargetEndPos = TargetLocation;
-			DebugTargetEndPos.Z = GunTowerComponentToControl->GetComponentLocation().Z;
-			DrawDebugLine(GetWorld(), GunTowerComponentToControl->GetComponentLocation(), DebugTargetEndPos, FColor(180.0f, 0.0f, 0.0f), false, -1, 0, 7.1f);
+			FRotator LookAtTargetRotation = UKismetMathLibrary::FindLookAtRotation(GunTowerComponentToControl->GetComponentLocation(), TargetLocation);
+			fCurrentDesiredZTowerRotation = LookAtTargetRotation.Euler().Z; // Only z component is relevant for tower rotation
+
+			FVector GunTowerLocation = GunTowerComponentToControl->GetComponentLocation();
+			GunTowerLocation.Z = 0.0f;
+			FVector GunTowerToMouseDirection = TargetLocation - GunTowerLocation;
+			GunTowerToMouseDirection.Normalize();
+			FVector GunTowerRightDirection = GunTowerComponentToControl->GetRightVector();
+			GunTowerRightDirection.Z = 0.0f;
+
+			if (FVector::DotProduct(GunTowerToMouseDirection, GunTowerRightDirection) < 0)
+			{
+				fSign = -1; // Mouse pointer is left of gun
+			}
+			else
+			{
+				fSign = 1.0f; // Mouse pointer is right of gun
+			}
+
+			if (bDebugDrawLineFromTowerToMouse && GetWorld())
+			{
+				FVector DebugTargetEndPos = TargetLocation;
+				DebugTargetEndPos.Z = GunTowerComponentToControl->GetComponentLocation().Z;
+				DrawDebugLine(GetWorld(), GunTowerComponentToControl->GetComponentLocation(), DebugTargetEndPos, FColor(180.0f, 0.0f, 0.0f), false, -1, 0, 7.1f);
+			}
 		}
 	}
 }
