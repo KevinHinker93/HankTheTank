@@ -23,9 +23,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Movement Settings")
 		float fTimeToReachMaxVelocityInSeconds = 2.0f;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Movement Settings")
-		bool bSeekNearestTarget = true;
-
 	UPROPERTY(EditDefaultsOnly, Category = "Explosion")
 		float fExplosionRadius = 3.0f;
 
@@ -33,7 +30,7 @@ public:
 	* Can be called to let the projectile home to a specified target.
 	*/
 	UFUNCTION(BlueprintCallable)
-		void OnStartHoming(const AActor* HomingTarget);
+		void OnStartHoming(AActor* HomingTarget);
 
 protected:
 	virtual void BeginPlay();
@@ -45,10 +42,24 @@ private:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Collider, meta = (AllowPrivateAccess = "true"))
 		USphereComponent* HomingDetectionTriggerComponent;
 
+	UPROPERTY()
+		AActor* CurrentHomingTargetActor = nullptr;
+
 	UFUNCTION()
 		void OnDetectionTriggerOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 			UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
 
 	void SetProjectileVelocity(const float fVelocity);
+
+	/**
+	* Called to check if a new target is the nearest target.
+	* @warning Only call this function if Target is checked for nullptr.
+	*/
+	bool IsNearestTarget(const AActor* Target);
+
+	/**
+	* Called to check if a Target is blocked by a static object.
+	* @warning Only call this function if Target is checked for nullptr.
+	*/
 	bool IsTargetBlockedByAnObstacle(const AActor* Target);
 };

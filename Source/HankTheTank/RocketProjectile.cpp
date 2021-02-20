@@ -60,24 +60,26 @@ void ARocketProjectile::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* Ot
 
 	Explode(true);
 }
-// TODO: assign to on death of homing actor so it can acquire a new target, and find closest homing target
+
 void ARocketProjectile::OnDetectionTriggerOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor && !IsTargetBlockedByAnObstacle(OtherActor))
+	if (OtherActor && OtherActor != CurrentHomingTargetActor && !IsTargetBlockedByAnObstacle(OtherActor))
 	{
-		OnStartHoming(OtherActor);
+		if (IsNearestTarget(OtherActor))
+		{
+			OnStartHoming(OtherActor);
+		}
 	}
 }
 
-void ARocketProjectile::OnStartHoming(const AActor* HomingTarget)
+void ARocketProjectile::OnStartHoming(AActor* HomingTarget)
 {
-	HomingDetectionTriggerComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
 	EXECUTE_BLOCK_CHECKED(ProjectileMovement, LogPlayerTank, TEXT("Projectile %s cannot start homing, becuase ProjectileMovement is null"), *GetName())
 	{
 		ProjectileMovement->bIsHomingProjectile = true;
 		ProjectileMovement->HomingTargetComponent = HomingTarget->GetRootComponent();
+		CurrentHomingTargetActor = HomingTarget;
 	}
 }
 
@@ -90,22 +92,47 @@ void ARocketProjectile::SetProjectileVelocity(const float fVelocity)
 	}
 }
 
+bool ARocketProjectile::IsNearestTarget(const AActor* Target)
+{
+	bool bIsNearest = false;
+	if (CurrentHomingTargetActor)
+	{
+		FVector ProjectileLocation = GetActorLocation();
+		FVector NewTargetLocation = Target->GetActorLocation();
+		FVector CurrentHomingTargetLocation = CurrentHomingTargetActor->GetActorLocation();
+
+		FVector ProjectileToNewTargetVector = NewTargetLocation - ProjectileLocation;
+		FVector ProjectileToCurrentTargetVector = CurrentHomingTargetLocation - ProjectileLocation;
+
+		if (ProjectileToNewTargetVector.SizeSquared2D() < ProjectileToCurrentTargetVector.SizeSquared2D())
+		{
+			bIsNearest = true;
+		}
+	}
+	else
+	{
+		// If there is no current homing target the new target is definately the nearest target
+		bIsNearest = true;
+	}
+
+	return bIsNearest;
+}
+
 bool ARocketProjectile::IsTargetBlockedByAnObstacle(const AActor* Target)
 {
+	UWorld* world = GetWorld();
+	EXECUTE_BLOCK_CHECKED(world, LogPlayerTank, TEXT("Projectile %s could not check if target is blocked by an obstacle, because world is null"), *GetName())
+	{
+		FHitResult HitResult;
+		FVector StartLocation = GetActorLocation();
+		FVector EndLocation = Target->GetActorLocation();
 
-	FHitResult HitResult;
-	FVector StartLocation = GetActorLocation();
-	FVector EndLocation = Target->GetActorLocation();
+		FCollisionQueryParams TraceParams;
+		TraceParams.AddIgnoredActor(Target);
+		TraceParams.AddIgnoredActor(this);
 
+		return GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECollisionChannel::ECC_WorldStatic, TraceParams);
+	}
 
-	FCollisionQueryParams TraceParams;
-	TraceParams.AddIgnoredActor(Target);
-	TraceParams.AddIgnoredActor(this);
-
-	bool const bHitStaticObj = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECollisionChannel::ECC_WorldStatic, TraceParams);
-
-	if (bHitStaticObj)
-		UE_LOG(LogTemp, Error, TEXT("hit obstacle"));
-
-	return bHitStaticObj;
+	return false;
 }
