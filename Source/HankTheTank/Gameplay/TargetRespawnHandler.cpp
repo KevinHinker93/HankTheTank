@@ -134,7 +134,7 @@ void ATargetRespawnHandler::OnTargetDestroyed(AActor* DestroyedActor)
 {
 	DestroyedActor->OnDestroyed.RemoveDynamic(this, &ATargetRespawnHandler::OnTargetDestroyed);
 
-	FTimerDelegate MyDelegate = FTimerDelegate::CreateUObject(this, &ATargetRespawnHandler::OnRespawnATarget);
+	FTimerDelegate RespawnDelegate = FTimerDelegate::CreateUObject(this, &ATargetRespawnHandler::OnRespawnATarget);
 	FTimerHandle Handle;
-	GetWorldTimerManager().SetTimer(Handle, MyDelegate, fRespawnTime, false);
+	GetWorldTimerManager().SetTimer(Handle, RespawnDelegate, fRespawnTime, false);
 }

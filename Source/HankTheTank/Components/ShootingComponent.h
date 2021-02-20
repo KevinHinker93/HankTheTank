@@ -8,8 +8,6 @@
 #include "../HankTheTankProjectile.h"
 #include "ShootingComponent.generated.h"
 
-// TODO: implement shoot cooldown
-
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), Blueprintable )
 class HANKTHETANK_API UShootingComponent : public USceneComponent
 {
@@ -17,6 +15,9 @@ class HANKTHETANK_API UShootingComponent : public USceneComponent
 
 public:	
 	UShootingComponent();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ShootSettings")
+		float fShootingInterval = 1.0f;
 
 	/**
 	* Called when an entity wants to trigger a single shot of a projectile.
@@ -32,4 +33,10 @@ protected:
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Shots", meta = (AllowPrivateAccess = "true"))
 		TMap<EShotType, TSubclassOf<AHankTheTankProjectile>> ProjectileClassByShotType;
+
+	bool bCanShoot = true;
+
+	void StartCooldown();
+	UFUNCTION()
+		void OnCooldownEnd();
 };
