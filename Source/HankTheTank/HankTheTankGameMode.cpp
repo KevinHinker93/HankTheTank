@@ -1,7 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "HankTheTankGameMode.h"
-#include "HankTheTankPawn.h"
+#include "Characters/HankTheTankPawn.h"
 
 AHankTheTankGameMode::AHankTheTankGameMode()
 {

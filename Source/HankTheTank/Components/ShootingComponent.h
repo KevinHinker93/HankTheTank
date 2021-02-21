@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
 #include "../ShootingSystem/ShotType.h"
-#include "../HankTheTankProjectile.h"
+#include "../ShootingSystem/HankTheTankProjectile.h"
 #include "ShootingComponent.generated.h"
 
 class USoundBase;
