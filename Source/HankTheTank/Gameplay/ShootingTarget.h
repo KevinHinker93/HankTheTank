@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "ShootingTarget.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogTargets, Log, All);
+
 class UStaticMeshComponent;
 
 UCLASS()

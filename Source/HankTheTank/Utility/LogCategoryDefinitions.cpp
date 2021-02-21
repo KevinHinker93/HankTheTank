@@ -4,4 +4,4 @@
 #include "LogCategoryDefinitions.h"
 
 DEFINE_LOG_CATEGORY(LogPlayerTank);
-
+DEFINE_LOG_CATEGORY(LogShooting);

@@ -4,6 +4,8 @@
 #include "ShootingTarget.h"
 #include "Components/StaticMeshComponent.h"
 
+DEFINE_LOG_CATEGORY(LogTargets);
+
 AShootingTarget::AShootingTarget()
 {
 	PrimaryActorTick.bCanEverTick = false;
@@ -17,6 +19,7 @@ AShootingTarget::AShootingTarget()
 
 void AShootingTarget::Die()
 {
+	UE_LOG(LogTargets, Log, TEXT("Target %s will be destroyed"), *GetName());
 	Destroy();
 }
 

@@ -28,6 +28,7 @@ public:
 
 	/**
 	* Can be called to let the projectile home to a specified target.
+	* @Warning only call if @param HomingTarget was checked for nullptr
 	*/
 	UFUNCTION(BlueprintCallable)
 		void OnStartHoming(AActor* HomingTarget);

@@ -22,7 +22,7 @@ void AMissileProjectile::BeginPlay()
 	Super::BeginPlay();
 
 	EXECUTE_FUNC_CHECKED(HomingDetectionTriggerComponent, HomingDetectionTriggerComponent->OnComponentBeginOverlap.AddDynamic(this, &AMissileProjectile::OnDetectionTriggerOverlap),
-		LogPlayerController, TEXT("Projectile %s could not bind to the detection radius overlap event, because it was null"), *GetName());
+		LogShooting, TEXT("Projectile %s could not bind to the detection radius overlap event, because it was null"), *GetName());
 
 	SetProjectileVelocity(fStartingVelocity);
 }
@@ -31,7 +31,7 @@ void AMissileProjectile::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	EXECUTE_BLOCK_CHECKED(ProjectileMovement, LogPlayerTank, TEXT("Cannot adjust velocity of %s, becuase ProjectileMovement is null"), *GetName())
+	EXECUTE_BLOCK_CHECKED(ProjectileMovement, LogShooting, TEXT("Cannot adjust velocity of %s, becuase ProjectileMovement is null"), *GetName())
 	{
 		float fCurrentProjectileForwardVelocity = ProjectileMovement->Velocity.Size();
 		if (fCurrentProjectileForwardVelocity < fMaxVelocity)
@@ -44,7 +44,7 @@ void AMissileProjectile::Tick(float DeltaSeconds)
 			}
 			else
 			{
-				UE_LOG(LogPlayerTank, Log, TEXT("Cannot adjust velocity of %s, becuase fTimeToReachMaxVelocityInSeconds is 0.0f"), *GetName());
+				UE_LOG(LogShooting, Log, TEXT("Cannot adjust velocity of %s, becuase fTimeToReachMaxVelocityInSeconds is 0.0f"), *GetName());
 			}
 		}
 	}
@@ -75,17 +75,18 @@ void AMissileProjectile::OnDetectionTriggerOverlap(UPrimitiveComponent* Overlapp
 
 void AMissileProjectile::OnStartHoming(AActor* HomingTarget)
 {
-	EXECUTE_BLOCK_CHECKED(ProjectileMovement, LogPlayerTank, TEXT("Projectile %s cannot start homing, becuase ProjectileMovement is null"), *GetName())
+	EXECUTE_BLOCK_CHECKED(ProjectileMovement, LogShooting, TEXT("Projectile %s cannot start homing, becuase ProjectileMovement is null"), *GetName())
 	{
 		ProjectileMovement->bIsHomingProjectile = true;
 		ProjectileMovement->HomingTargetComponent = HomingTarget->GetRootComponent();
 		CurrentHomingTargetActor = HomingTarget;
+		UE_LOG(LogShooting, Log, TEXT("Projectile %s starts homing %s"), *GetName(), *HomingTarget->GetName());
 	}
 }
 
 void AMissileProjectile::SetProjectileVelocity(const float fVelocity)
 {
-	EXECUTE_BLOCK_CHECKED(ProjectileMovement, LogPlayerTank, TEXT("Cannot set velocity of %s, becuase ProjectileMovement is null"), *GetName())
+	EXECUTE_BLOCK_CHECKED(ProjectileMovement, LogShooting, TEXT("Cannot set velocity of %s, becuase ProjectileMovement is null"), *GetName())
 	{
 		ProjectileMovement->Velocity += (GetActorForwardVector() * (fVelocity - ProjectileMovement->Velocity.Size()));
 		ProjectileMovement->MaxSpeed = fVelocity;
@@ -121,7 +122,7 @@ bool AMissileProjectile::IsNearestTarget(const AActor* Target)
 bool AMissileProjectile::IsTargetBlockedByAnObstacle(const AActor* Target)
 {
 	UWorld* world = GetWorld();
-	EXECUTE_BLOCK_CHECKED(world, LogPlayerTank, TEXT("Projectile %s could not check if target is blocked by an obstacle, because world is null"), *GetName())
+	EXECUTE_BLOCK_CHECKED(world, LogShooting, TEXT("Projectile %s could not check if target is blocked by an obstacle, because world is null"), *GetName())
 	{
 		FHitResult HitResult;
 		FVector StartLocation = GetActorLocation();

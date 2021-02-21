@@ -40,7 +40,7 @@ void UShootingComponent::Shoot(const TSubclassOf<ABulletProjectile> ProjectileCl
 	}
 	else if (GetOwner())
 	{
-		UE_LOG(LogPlayerTank, Warning, TEXT("%s could not fire projectile, because projectile class is null or world is null."), *GetOwner()->GetName());
+		UE_LOG(LogShooting, Warning, TEXT("%s could not fire projectile, because projectile class is null or world is null."), *GetOwner()->GetName());
 	}
 }
 
@@ -48,7 +48,7 @@ void UShootingComponent::StartCooldown()
 {
 	if (GetOwner())
 	{
-		EXECUTE_BLOCK_CHECKED(GetWorld(), LogPlayerTank, TEXT("Could not start cooldown for tank %s, because world was null"), *GetOwner()->GetName())
+		EXECUTE_BLOCK_CHECKED(GetWorld(), LogShooting, TEXT("Could not start cooldown for tank %s, because world was null"), *GetOwner()->GetName())
 		{
 			bCanShoot = false;
 
@@ -76,7 +76,7 @@ void UShootingComponent::InvokeShotByShotType(const EShotType ShotType)
 		}
 		else if(GetOwner())
 		{
-			UE_LOG(LogPlayerTank, Warning, TEXT("%s could not fire projectile for specified shot type, have you forgot to set one?"), *GetOwner()->GetName());
+			UE_LOG(LogShooting, Warning, TEXT("%s could not fire projectile for specified shot type, have you forgot to set one?"), *GetOwner()->GetName());
 		}
 	}
 }

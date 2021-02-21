@@ -5,10 +5,11 @@
 #include "NavigationSystem.h"
 #include "DrawDebugHelpers.h"
 #include "../Utility/StaticHelperFunctions.h"
-#include "../Utility/LogCategoryDefinitions.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
+
+DEFINE_LOG_CATEGORY(LogTargetSpawning);
 
 ATargetRespawnHandler::ATargetRespawnHandler()
 {
@@ -26,7 +27,7 @@ void ATargetRespawnHandler::BeginPlay()
 
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	GET_OBJ_CHECKED(NavMeshForSpawning, UNavigationSystemV1::GetCurrent(this), LogPlayerTank,
+	GET_OBJ_CHECKED(NavMeshForSpawning, UNavigationSystemV1::GetCurrent(this), LogTargetSpawning,
 		TEXT("%s could not find a nav mesh for spawning, have you forgot to add one?"), *GetName());
 
 	for (int i = 0; i < iMaxTargetCount; ++i)
@@ -47,7 +48,7 @@ void ATargetRespawnHandler::OnRespawnATarget()
 
 void ATargetRespawnHandler::SpawnTarget()
 {
-	EXECUTE_BLOCK_CHECKED(NavMeshForSpawning, LogPlayerTank, TEXT("%s could not spawn target because nav mesh is null"), *GetName())
+	EXECUTE_BLOCK_CHECKED(NavMeshForSpawning, LogTargetSpawning, TEXT("%s could not spawn target because nav mesh is null"), *GetName())
 	{
 		// Create new target instance 
 
@@ -147,7 +148,7 @@ void ATargetRespawnHandler::SpawnTarget()
 			}
 			else
 			{
-				UE_LOG(LogPlayerTank, Warning, TEXT("%s could not find a suitable spawn location for a target"), *GetName());
+				UE_LOG(LogTargetSpawning, Warning, TEXT("%s could not find a suitable spawn location for a target"), *GetName());
 				ShootingTarget->Destroy();
 			}
 		}

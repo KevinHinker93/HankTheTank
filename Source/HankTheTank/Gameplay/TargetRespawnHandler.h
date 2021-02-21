@@ -8,6 +8,8 @@
 #include "../Utility/RangedValue.h"
 #include "TargetRespawnHandler.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogTargetSpawning, Log, All);
+
 class UNavigationSystemV1;
 
 /**

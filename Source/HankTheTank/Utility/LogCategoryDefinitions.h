@@ -5,4 +5,4 @@
 #include "CoreMinimal.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogPlayerTank, Log, All);
-
+DECLARE_LOG_CATEGORY_EXTERN(LogShooting, Log, All);

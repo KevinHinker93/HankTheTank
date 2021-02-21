@@ -27,7 +27,7 @@ ABulletProjectile::ABulletProjectile()
 
 void ABulletProjectile::Explode(bool bShouldDestroyParticle)
 {
-	EXECUTE_BLOCK_CHECKED(GetWorld(), LogPlayerTank, TEXT("Projectile %s could not explode, because world was null"), *GetName())
+	EXECUTE_BLOCK_CHECKED(GetWorld(), LogShooting, TEXT("Projectile %s could not explode, because world was null"), *GetName())
 	{
 		FVector ExplosionLocation = GetActorLocation();
 		FRotator ExplosionRotation = GetActorRotation();
@@ -44,7 +44,7 @@ void ABulletProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 
-	EXECUTE_BLOCK_CHECKED(ProjectileMesh, LogPlayerTank, TEXT("Projectile %s could not bind to collision events, because collider component was null"), *GetName())
+	EXECUTE_BLOCK_CHECKED(ProjectileMesh, LogShooting, TEXT("Projectile %s could not bind to collision events, because collider component was null"), *GetName())
 	{
 		ProjectileMesh->OnComponentHit.AddDynamic(this, &ABulletProjectile::OnHit);
 		ProjectileMesh->OnComponentBeginOverlap.AddDynamic(this, &ABulletProjectile::OnOverlap);
@@ -73,6 +73,7 @@ void ABulletProjectile::OnProjectileOverlap(UPrimitiveComponent* OverlappedCompo
 	if (OtherActor && OtherActor->CanBeDamaged())
 	{
 		UGameplayStatics::ApplyPointDamage(OtherActor, 1.0f, SweepResult.ImpactNormal, SweepResult, nullptr, this, ProjectileDamageTypeClass);
+		UE_LOG(LogShooting, Log, TEXT("Projectile %s overlapped %s and tries to damage it."), *GetName(), *OtherActor->GetName());
 	}
 
 	Explode(true);
