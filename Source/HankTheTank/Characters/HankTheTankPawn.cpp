@@ -24,10 +24,10 @@ AHankTheTankPawn::AHankTheTankPawn()
 	TankTowerSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("TankTowerRoot"));
 	TankTowerSceneComponent->SetupAttachment(RootComponent);
 
-	UStaticMeshComponent* TankTowerMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TankTowerMesh"));
+	TankTowerMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TankTowerMesh"));
 	TankTowerMeshComponent->SetupAttachment(TankTowerSceneComponent);
 
-	UStaticMeshComponent* TankGunMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TankGunMesh"));
+	TankGunMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TankGunMesh"));
 	TankGunMeshComponent->SetupAttachment(TankTowerSceneComponent);
 
 	// Create gun controller
