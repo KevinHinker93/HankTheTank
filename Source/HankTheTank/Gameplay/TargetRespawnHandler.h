@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "ShootingTarget.h"
+#include "../Utility/RangedValue.h"
 #include "TargetRespawnHandler.generated.h"
 
 class UNavigationSystemV1;
@@ -30,7 +31,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
 		TSubclassOf<AShootingTarget> TargetClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
-		float fRespawnTime = 4.0f;
+		FRangedValue fRespawnTimeRange;
 
 protected:
 	virtual void BeginPlay() override;

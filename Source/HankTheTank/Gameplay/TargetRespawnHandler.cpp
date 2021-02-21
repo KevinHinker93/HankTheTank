@@ -163,6 +163,7 @@ void ATargetRespawnHandler::OnTargetDestroyed(AActor* DestroyedActor)
 
 	FTimerDelegate RespawnDelegate = FTimerDelegate::CreateUObject(this, &ATargetRespawnHandler::OnRespawnATarget);
 	FTimerHandle Handle;
+	float fRespawnTime = fRespawnTimeRange.GetRandomValueInRange();
 	GetWorldTimerManager().SetTimer(Handle, RespawnDelegate, fRespawnTime, false);
 }
 
