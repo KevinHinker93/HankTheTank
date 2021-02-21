@@ -4,21 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "HankTheTankProjectile.generated.h"
+#include "BulletProjectile.generated.h"
 
 class UProjectileMovementComponent;
 class UStaticMeshComponent;
 class UParticleSystem;
 
-// TODO: rename to bullet projectile
-
 UCLASS(config=Game)
-class AHankTheTankProjectile : public AActor
+class ABulletProjectile : public AActor
 {
 	GENERATED_BODY()
 
 public:
-	AHankTheTankProjectile();
+	ABulletProjectile();
 
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 		float fBaseImpulseImpactStrength = 25.0f;

@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
 #include "../ShootingSystem/ShotType.h"
-#include "../ShootingSystem/HankTheTankProjectile.h"
+#include "../ShootingSystem/BulletProjectile.h"
 #include "ShootingComponent.generated.h"
 
 class USoundBase;
@@ -42,11 +42,11 @@ private:
 		USoundBase* Shotsound;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Shots", meta = (AllowPrivateAccess = "true"))
-		TMap<EShotType, TSubclassOf<AHankTheTankProjectile>> ProjectileClassByShotType;
+		TMap<EShotType, TSubclassOf<ABulletProjectile>> ProjectileClassByShotType;
 
 	bool bCanShoot = true;
 
-	void Shoot(const TSubclassOf<AHankTheTankProjectile> ProjectileClass);
+	void Shoot(const TSubclassOf<ABulletProjectile> ProjectileClass);
 
 	void StartCooldown();
 	UFUNCTION()

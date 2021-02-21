@@ -3,17 +3,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "HankTheTankProjectile.h"
-#include "RocketProjectile.generated.h"
+#include "BulletProjectile.h"
+#include "MissileProjectile.generated.h"
 
 class USphereComponent;
-// TODO: rename to missile projectile
+
 UCLASS()
-class HANKTHETANK_API ARocketProjectile : public AHankTheTankProjectile
+class HANKTHETANK_API AMissileProjectile : public ABulletProjectile
 {
 	GENERATED_BODY()
 
-	ARocketProjectile();
+	AMissileProjectile();
 
 public:
 	UPROPERTY(EditDefaultsOnly, Category = "Movement Settings")

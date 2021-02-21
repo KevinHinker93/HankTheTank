@@ -21,7 +21,7 @@ void UShootingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-void UShootingComponent::Shoot(const TSubclassOf<AHankTheTankProjectile> ProjectileClass)
+void UShootingComponent::Shoot(const TSubclassOf<ABulletProjectile> ProjectileClass)
 {
 	if (ProjectileClass && GetWorld())
 	{
@@ -29,7 +29,7 @@ void UShootingComponent::Shoot(const TSubclassOf<AHankTheTankProjectile> Project
 		spawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 		FVector SpawnLocation = GetComponentLocation();
 		FRotator SpawnRotation = GetComponentRotation();
-		GetWorld()->SpawnActor<AHankTheTankProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, spawnParameters);
+		GetWorld()->SpawnActor<ABulletProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, spawnParameters);
 
 		if (Shotsound != nullptr)
 		{
@@ -71,7 +71,7 @@ void UShootingComponent::InvokeShotByShotType(const EShotType ShotType)
 	{
 		if (ProjectileClassByShotType.Contains(ShotType))
 		{
-			TSubclassOf<AHankTheTankProjectile> ProjectileClass = ProjectileClassByShotType[ShotType];
+			TSubclassOf<ABulletProjectile> ProjectileClass = ProjectileClassByShotType[ShotType];
 			Shoot(ProjectileClass);
 		}
 		else if(GetOwner())

@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "RocketProjectile.h"
+#include "MissileProjectile.h"
 #include "Components/SphereComponent.h"
 #include "../Utility/LogCategoryDefinitions.h"
 #include "../Utility/StaticHelperFunctions.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
-ARocketProjectile::ARocketProjectile()
+AMissileProjectile::AMissileProjectile()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
@@ -17,17 +17,17 @@ ARocketProjectile::ARocketProjectile()
 	HomingDetectionTriggerComponent->SetupAttachment(RootComponent);
 }
 
-void ARocketProjectile::BeginPlay()
+void AMissileProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 
-	EXECUTE_FUNC_CHECKED(HomingDetectionTriggerComponent, HomingDetectionTriggerComponent->OnComponentBeginOverlap.AddDynamic(this, &ARocketProjectile::OnDetectionTriggerOverlap),
+	EXECUTE_FUNC_CHECKED(HomingDetectionTriggerComponent, HomingDetectionTriggerComponent->OnComponentBeginOverlap.AddDynamic(this, &AMissileProjectile::OnDetectionTriggerOverlap),
 		LogPlayerController, TEXT("Projectile %s could not bind to the detection radius overlap event, because it was null"), *GetName());
 
 	SetProjectileVelocity(fStartingVelocity);
 }
 
-void ARocketProjectile::Tick(float DeltaSeconds)
+void AMissileProjectile::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
@@ -50,7 +50,7 @@ void ARocketProjectile::Tick(float DeltaSeconds)
 	}
 }
 
-void ARocketProjectile::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void AMissileProjectile::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	// Only add impulse and destroy projectile if we hit a physics
 	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr) && OtherComp->IsSimulatingPhysics())
@@ -61,7 +61,7 @@ void ARocketProjectile::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* Ot
 	Explode(true);
 }
 
-void ARocketProjectile::OnDetectionTriggerOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+void AMissileProjectile::OnDetectionTriggerOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor && OtherActor != CurrentHomingTargetActor && !IsTargetBlockedByAnObstacle(OtherActor))
@@ -73,7 +73,7 @@ void ARocketProjectile::OnDetectionTriggerOverlap(UPrimitiveComponent* Overlappe
 	}
 }
 
-void ARocketProjectile::OnStartHoming(AActor* HomingTarget)
+void AMissileProjectile::OnStartHoming(AActor* HomingTarget)
 {
 	EXECUTE_BLOCK_CHECKED(ProjectileMovement, LogPlayerTank, TEXT("Projectile %s cannot start homing, becuase ProjectileMovement is null"), *GetName())
 	{
@@ -83,7 +83,7 @@ void ARocketProjectile::OnStartHoming(AActor* HomingTarget)
 	}
 }
 
-void ARocketProjectile::SetProjectileVelocity(const float fVelocity)
+void AMissileProjectile::SetProjectileVelocity(const float fVelocity)
 {
 	EXECUTE_BLOCK_CHECKED(ProjectileMovement, LogPlayerTank, TEXT("Cannot set velocity of %s, becuase ProjectileMovement is null"), *GetName())
 	{
@@ -92,7 +92,7 @@ void ARocketProjectile::SetProjectileVelocity(const float fVelocity)
 	}
 }
 
-bool ARocketProjectile::IsNearestTarget(const AActor* Target)
+bool AMissileProjectile::IsNearestTarget(const AActor* Target)
 {
 	bool bIsNearest = false;
 	if (CurrentHomingTargetActor)
@@ -118,7 +118,7 @@ bool ARocketProjectile::IsNearestTarget(const AActor* Target)
 	return bIsNearest;
 }
 
-bool ARocketProjectile::IsTargetBlockedByAnObstacle(const AActor* Target)
+bool AMissileProjectile::IsTargetBlockedByAnObstacle(const AActor* Target)
 {
 	UWorld* world = GetWorld();
 	EXECUTE_BLOCK_CHECKED(world, LogPlayerTank, TEXT("Projectile %s could not check if target is blocked by an obstacle, because world is null"), *GetName())
