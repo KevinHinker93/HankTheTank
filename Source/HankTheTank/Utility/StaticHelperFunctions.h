@@ -6,24 +6,23 @@
 #include "UObject/NoExportTypes.h"
 #include "StaticHelperFunctions.generated.h"
 
+/**
+* Helper macro for assigning a pointer to a variable with a specific function.
+* Will print a warning if the assigned pointer is nullptr.
+* Use this macro where a log is useful e.g. to see if an assignment was successful.
+* @param Text - The print text if the assigned pointer is nullptr, can be formatted with @param ... .
+*/
 #define GET_OBJ_CHECKED(VariableToAssignValue, FunctionThatAssigns, LogCategory, Text, ...) \
 	VariableToAssignValue = FunctionThatAssigns; \
 	if(VariableToAssignValue == nullptr) \
 		UE_LOG(LogCategory, Warning, Text, ##__VA_ARGS__)
 
-// TODO: maybe not needed
-// Assigns array and prints a message if the assigned array has size 0
-#define GET_ARR_CHECKED(ArrToAssignValue, FunctionThatAssigns, LogCategory, Text, ...) \
-	static_assert(TIsTArray<decltype(ArrToAssignValue)>::Value, "Arr must be TArray."); \
-	ArrToAssignValue = FunctionThatAssigns; \
-	if(ArrToAssignValue.Num() <= 0) \
-	{ \
-		UE_LOG(LogCategory, Warning, Text, ##__VA_ARGS__) \
-	}
-	
-
-// Macro for executing a block only if the variable is not nullptr
-// the execution block must be declared manually with {}
+/**
+* Helper macro for executing a block only if the specified variable is not nullptr.
+* The execution block must be declared manually with {}
+* Use this macro where a log is useful e.g. to see if a specific section is not executed.
+* @param Text - The print text if the assigned pointer is nullptr, can be formatted with @param ... .
+*/
 #define EXECUTE_BLOCK_CHECKED(CheckedVariable, LogCategory, Text, ...) \
 	if(!CheckedVariable) \
 	{ \
@@ -31,7 +30,11 @@
 	} \
 	else 
 
-// Macro for executing a function only if a variable is not nullptr
+/**
+* Helper macro for executing a function only if the specified variable is not nullptr.
+* Use this macro where a log is useful e.g. to see if a specific function is not executed.
+* @param Text - The print text if the assigned pointer is nullptr, can be formatted with @param ... .
+*/
 #define EXECUTE_FUNC_CHECKED(CheckedVariable, FuncToExecute, LogCategory, Text, ...) \
 	if(!CheckedVariable) \
 	{ \
@@ -48,7 +51,10 @@ class HANKTHETANK_API UStaticHelperFunctions : public UObject
 	GENERATED_BODY()
 	
 public:
-	// Returns the desired component with the desired type, can be nullptr
+	/**
+	* Returns the desired component with the desired type, can be nullptr.
+	* @param Owner - The owner of the component.
+	*/
 	template <typename CompType>
 	static CompType* GetActorCompAs(AActor* Owner)
 	{
@@ -62,7 +68,11 @@ public:
 		return DesiredComp;
 	};
 
-	// Returns the desired component with the desired type and a specific tag, can be empty
+	/**
+	* Returns the desired component with the desired type and a specific tag, can be nullptr.
+	* @param Owner - The owner of the component.
+	* @param TagName - The tag which the searched component should have.
+	*/
 	template <typename CompType>
 	static CompType* GetActorCompByTagAs(AActor* Owner, FName TagName)
 	{

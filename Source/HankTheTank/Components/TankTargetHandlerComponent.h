@@ -11,7 +11,7 @@ class APlayerController;
 /**
 * Component class that is responsible for tracking a target for a shooting entity.
 * Target can either be an Actor or a location.
-* @warning Target Actor can be nullptr if the target can only be represented by a location e.g mouse position.
+* @warning - Target Actor can be nullptr if the target can only be represented by a location e.g mouse position.
 */
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )

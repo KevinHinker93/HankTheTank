@@ -85,21 +85,26 @@ private:
 
 	/**
 	* Called when a spawned target is destroyed.
-	* Will trigger a respawn timer delegate to automatically respawn a target after timer depletion
+	* Will trigger a respawn timer delegate to automatically respawn a target after timer depletion.
 	*/
 	UFUNCTION()
 		void OnTargetDestroyed(AActor* DestroyedActor);
 
 	/**
 	* Checks if a target is blocked by obstacles using a sphere overlap.
-	@Warning Use this function only if @param Target is checked for nullptr
+	* @param SpawnLocation - Location to check for overlapping obstacles.
+	* @param Target - The target actor to spawn, used for calculating overlap check radius.
+	* @Warning - Use this function only if @param Target is checked for nullptr.
 	*/
 	bool IsSpawnLocationBlocked(const FVector SpawnLocation, const AShootingTarget* Target, TArray<AActor*>& OutBlockingActors);
 	/**
 	* Returns the farthest actor of a given list for the target.
-	@Warning Use this function only if @param Target is checked for nullptr
+	* @Warning Use this function only if @param Target is checked for nullptr.
 	*/
 	AActor* GetFarthestOverlappingActorFromTarget(const TArray<AActor*>& OverlappingActors, const AShootingTarget* Target);
 	FVector CalculateNavMeshSearchStartingPointFromFarthestActor(const AActor* FarthestActor, const FVector CurrentTargetLocation);
+	/**
+	* @param bIsInValidPosition - Is the point to draw known to be an invalid spawn position, used to determine draw color.
+	*/
 	void DrawnDebugSpawnPoint(FVector PointLocation, bool bIsInValidPosition);
 };

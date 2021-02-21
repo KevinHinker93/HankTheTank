@@ -72,8 +72,8 @@ void ABulletProjectile::OnProjectileOverlap(UPrimitiveComponent* OverlappedCompo
 {
 	if (OtherActor && OtherActor->CanBeDamaged())
 	{
-		UGameplayStatics::ApplyPointDamage(OtherActor, 1.0f, SweepResult.ImpactNormal, SweepResult, nullptr, this, ProjectileDamageTypeClass);
 		UE_LOG(LogShooting, Log, TEXT("Projectile %s overlapped %s and tries to damage it."), *GetName(), *OtherActor->GetName());
+		UGameplayStatics::ApplyPointDamage(OtherActor, 1.0f, SweepResult.ImpactNormal, SweepResult, nullptr, this, ProjectileDamageTypeClass);
 	}
 
 	Explode(true);
