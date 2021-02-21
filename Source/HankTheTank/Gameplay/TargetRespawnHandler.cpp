@@ -7,6 +7,8 @@
 #include "../Utility/StaticHelperFunctions.h"
 #include "../Utility/LogCategoryDefinitions.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/GameplayStatics.h"
 
 ATargetRespawnHandler::ATargetRespawnHandler()
 {
@@ -16,6 +18,11 @@ ATargetRespawnHandler::ATargetRespawnHandler()
 void ATargetRespawnHandler::BeginPlay()
 {
 	Super::BeginPlay();
+
+	for (auto CollisionChannel : OverlappingObstacleChannels)
+	{
+		OverlappingObstacleObjectTypes.Add(UEngineTypes::ConvertToObjectType(CollisionChannel));
+	}
 
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
@@ -42,60 +49,83 @@ void ATargetRespawnHandler::SpawnTarget()
 {
 	EXECUTE_BLOCK_CHECKED(NavMeshForSpawning, LogPlayerTank, TEXT("%s could not spawn target because nav mesh is null"), *GetName())
 	{
-		FNavLocation NavLocation;
-		bool bFoundPoint = NavMeshForSpawning->GetRandomPoint(NavLocation);
-		if (bFoundPoint)
-		{
-			FVector SpawnLocationOnNavMesh = NavLocation.Location;
-			if (bDrawSpawnLocations)
-			{
-				FVector PointLoc = SpawnLocationOnNavMesh;
-				PointLoc.Z += 10.0f;
-				DrawDebugPoint(GetWorld(), PointLoc, 5.0f, FColor(0, 190, 0), true, 0.1f, 0);
-			}
+		// Create new target instance 
 
-			AShootingTarget* ShootingTarget = GetWorld()->SpawnActor<AShootingTarget>(TargetClass, SpawnLocationOnNavMesh, FRotator::ZeroRotator, SpawnParams);
+		FTransform TargetTransform;
+
+		AShootingTarget* ShootingTarget = GetWorld()->SpawnActorDeferred<AShootingTarget>(TargetClass, TargetTransform, nullptr, nullptr,
+			SpawnParams.SpawnCollisionHandlingOverride);
+
+		if (ShootingTarget)
+		{
+			// Add new target instance to ignored list so it will not block any spawn collision checks
+			IgnoredActorsForSpawning.Add(ShootingTarget);
 
 			bool bWasSpawnSuccessful = false;
 			int iCurrentSpawnIteration = 0;
+			FVector FinalTargetPosition = FVector::ZeroVector;
+
+			FNavLocation NavLocation;
+			bool bFoundPoint = false;
+			bool bIsSpawnLocationBlocked;
+			TArray<AActor*> OverlappingActors;
+
 			while (bWasSpawnSuccessful == false && iCurrentSpawnIteration < iMaxSpawnIterations)
 			{
-				if (ShootingTarget)
+				// Fetch random location on nav mesh
+				bFoundPoint = NavMeshForSpawning->GetRandomPoint(NavLocation);
+				if (bFoundPoint)
 				{
-					FBox TargetBounds = ShootingTarget->GetComponentsBoundingBox();
-					FVector AdjustedPlaceHeightPosition{ 0.0f, 0.0f, TargetBounds.GetExtent().Z + TargetBounds.Min.Z};
-					ShootingTarget->AddActorWorldOffset(AdjustedPlaceHeightPosition);
+					FinalTargetPosition = NavLocation.Location;
 
-					TArray<AActor*> PossibleOverlappingActors;
-					ShootingTarget->GetOverlappingActors(PossibleOverlappingActors);
+					if (bDrawSpawnLocations)
+					{
+						DrawnDebugSpawnPoint(FinalTargetPosition, false);
+					}
 
-					if (PossibleOverlappingActors.Num() > 0 && !PossibleOverlappingActors[0]->ActorHasTag(IgnoredActorTagForSpawning))
+					bIsSpawnLocationBlocked = IsSpawnLocationBlocked(FinalTargetPosition, ShootingTarget, OverlappingActors);
+
+					if (bIsSpawnLocationBlocked)
 					{
 						if (bDrawSpawnLocations)
 						{
-							FVector PointLoc = ShootingTarget->GetActorLocation();
-							DrawDebugPoint(GetWorld(), PointLoc, 5.0f, FColor(190, 0, 0), true, 0.1f, 0);
+							DrawnDebugSpawnPoint(FinalTargetPosition, true);
 						}
 
-						FVector SpawnedTargetToOverlappingActorVector = PossibleOverlappingActors[0]->GetActorLocation() - ShootingTarget->GetActorLocation();
-						FVector NewSpawnOriginForNavMesh = ShootingTarget->GetActorLocation() - SpawnedTargetToOverlappingActorVector;
-						FNavLocation NewNavLocation;
-						NavMeshForSpawning->GetRandomPointInNavigableRadius(NewSpawnOriginForNavMesh, fSpawnRadiusFromObstacles, NewNavLocation);
-						FVector NewTargetPosition{ NewNavLocation.Location.X, NewNavLocation.Location.Y, ShootingTarget->GetActorLocation().Z };
-						ShootingTarget->SetActorLocation(NewTargetPosition);
+						// Try to move spawn location away from blocking actors and try finding a new random location in a specific radius
 
-						if (bDrawSpawnLocations)
+						AActor* FarthestBlockingActor = GetFarthestOverlappingActorFromTarget(OverlappingActors, ShootingTarget);
+						if (FarthestBlockingActor)
 						{
-							FVector PointLoc = ShootingTarget->GetActorLocation();
-							PointLoc.Z += 10.0f;
-							DrawDebugPoint(GetWorld(), PointLoc, 5.0f, FColor(0, 190, 0), true, 0.1f, 0);
-						}
+							FVector NavMeshOriginRequestPoint = CalculateNavMeshSearchStartingPointFromFarthestActor(FarthestBlockingActor, FinalTargetPosition);
+							bFoundPoint = NavMeshForSpawning->GetRandomPointInNavigableRadius(NavMeshOriginRequestPoint, fNavMeshRandomPointRadius, NavLocation);
 
-						ShootingTarget->GetOverlappingActors(PossibleOverlappingActors);
+							if (bFoundPoint)
+							{
+								FinalTargetPosition = NavLocation.Location;
 
-						if (!(PossibleOverlappingActors.Num() > 0 && !PossibleOverlappingActors[0]->ActorHasTag(IgnoredActorTagForSpawning)))
-						{
-							bWasSpawnSuccessful = true;
+								if (bDrawSpawnLocations)
+								{
+									DrawnDebugSpawnPoint(FinalTargetPosition, false);
+								}
+
+								// Check if the corrected spawn location away from the original overlapping actors is valid
+								// If not try to start finding a new complete radnom spawn location
+
+								bIsSpawnLocationBlocked = IsSpawnLocationBlocked(FinalTargetPosition, ShootingTarget, OverlappingActors);
+
+								if (!bIsSpawnLocationBlocked)
+								{
+									bWasSpawnSuccessful = true;
+								}
+								else
+								{
+									if (bDrawSpawnLocations)
+									{
+										DrawnDebugSpawnPoint(FinalTargetPosition, true);
+									}
+								}
+							}
 						}
 					}
 					else
@@ -107,9 +137,12 @@ void ATargetRespawnHandler::SpawnTarget()
 				++iCurrentSpawnIteration;
 			}
 
+			IgnoredActorsForSpawning.Remove(ShootingTarget); // Remove the current target from the collision ignore list so it will still overlap newly spawned targets
+
 			if (bWasSpawnSuccessful)
 			{
-				SetTargetFacingDirection(ShootingTarget);
+				FTransform FinalTargetTransform = FTransform(FinalTargetPosition);
+				UGameplayStatics::FinishSpawningActor(ShootingTarget, FinalTargetTransform);
 				ShootingTarget->OnDestroyed.AddDynamic(this, &ATargetRespawnHandler::OnTargetDestroyed);
 			}
 			else
@@ -121,20 +154,79 @@ void ATargetRespawnHandler::SpawnTarget()
 	}
 }
 
-void ATargetRespawnHandler::SetTargetFacingDirection(AShootingTarget* Target)
-{
-	FRotator LookAtRespawnHandlerRotation = UKismetMathLibrary::FindLookAtRotation(Target->GetActorLocation(), GetActorLocation());
-	FVector TargetFacingDirectionVector = LookAtRespawnHandlerRotation.Euler();
-	TargetFacingDirectionVector.X = 0.0f;
-	TargetFacingDirectionVector.Y = 0.0f;
-	Target->SetActorRotation(FRotator::MakeFromEuler(TargetFacingDirectionVector));
-}
-
 void ATargetRespawnHandler::OnTargetDestroyed(AActor* DestroyedActor)
 {
-	DestroyedActor->OnDestroyed.RemoveDynamic(this, &ATargetRespawnHandler::OnTargetDestroyed);
+	if (DestroyedActor)
+	{
+		DestroyedActor->OnDestroyed.RemoveDynamic(this, &ATargetRespawnHandler::OnTargetDestroyed);
+	}
 
 	FTimerDelegate RespawnDelegate = FTimerDelegate::CreateUObject(this, &ATargetRespawnHandler::OnRespawnATarget);
 	FTimerHandle Handle;
 	GetWorldTimerManager().SetTimer(Handle, RespawnDelegate, fRespawnTime, false);
+}
+
+bool ATargetRespawnHandler::IsSpawnLocationBlocked(const FVector SpawnLocation, const AShootingTarget* Target, TArray<AActor*>& OutBlockingActors)
+{
+	OutBlockingActors.Empty(); // Clear out hits, so it will only contain actors hit in this collision check
+	float OverlapSphereRadius = Target->GetComponentsBoundingBox().GetExtent().X * fSpawnOverlapToleranceMultiplier; // Use X component, because targets are only spheres in this case
+
+	return UKismetSystemLibrary::SphereOverlapActors(GetWorld(), SpawnLocation, OverlapSphereRadius, OverlappingObstacleObjectTypes,
+		nullptr, IgnoredActorsForSpawning, OutBlockingActors);
+}
+
+AActor* ATargetRespawnHandler::GetFarthestOverlappingActorFromTarget(const TArray<AActor*>& OverlappingActors, const AShootingTarget* Target)
+{
+	AActor* FarthestActor = nullptr;
+	float fGreatestDistance = 0.0f;
+	for (int i = 0; i < OverlappingActors.Num(); ++i)
+	{
+		AActor* OverlappingActor = OverlappingActors[i];
+		if (OverlappingActor)
+		{
+			const FVector OverlappingActorToTargetDistVector = Target->GetActorLocation() - OverlappingActor->GetActorLocation();
+			const float fDistance = OverlappingActorToTargetDistVector.SizeSquared2D();
+			if (fDistance > fGreatestDistance)
+			{
+				fGreatestDistance = fDistance;
+				FarthestActor = OverlappingActor;
+			}
+		}
+	}
+
+	return FarthestActor;
+}
+
+FVector ATargetRespawnHandler::CalculateNavMeshSearchStartingPointFromFarthestActor(const AActor* FarthestActor, const FVector CurrentTargetLocation)
+{
+	FVector FarthestActorLocation = FarthestActor->GetActorLocation();
+	float fFarthesActorBoundingBoxMaxComponent = FarthestActor->GetComponentsBoundingBox().GetExtent().GetMax();
+
+	FVector SpawnLocationToFarthestActorDirection = FarthestActorLocation - CurrentTargetLocation;
+	float fSpawnLocationToFarthestActorDistance = SpawnLocationToFarthestActorDirection.Size2D();
+	SpawnLocationToFarthestActorDirection.Normalize();
+
+	// Calculate starting point for new random point on nav mesh
+	// Starting position starts from the farthest blocking actor in the opposite direction
+	// from the target and the farthest actor. This will ensure that the Starting location will
+	// be away from all overlapped objects.
+	FVector NavMeshOriginRequestPoint = FarthestActorLocation +
+		(SpawnLocationToFarthestActorDirection * fSpawnLocationToFarthestActorDistance + fFarthesActorBoundingBoxMaxComponent);
+
+	return NavMeshOriginRequestPoint;
+}
+
+void ATargetRespawnHandler::DrawnDebugSpawnPoint(FVector PointLocation, bool bIsInValidPosition)
+{
+	FColor PointColor{ 0,0,0 };
+	if (bIsInValidPosition)
+	{
+		PointColor.R = 200;
+	}
+	else
+	{
+		PointColor.G = 200;
+	}
+
+	DrawDebugPoint(GetWorld(), PointLocation, 5.0f, PointColor, true, 0.1f, 0);
 }
