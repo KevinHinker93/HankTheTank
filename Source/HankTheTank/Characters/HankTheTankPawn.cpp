@@ -17,19 +17,17 @@ const FName AHankTheTankPawn::MoveRightBinding("MoveRight");
 const FName AHankTheTankPawn::FireMissileBinding("FireMissile");
 const FName AHankTheTankPawn::FireRocketBinding("FireRocket");
 
-// TODO: remove unneccessary member components
 AHankTheTankPawn::AHankTheTankPawn()
 {	
-	TankMovementMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TankMovementMesh"));
-	RootComponent = TankMovementMeshComponent;
+	RootComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TankMovementMesh"));
 
 	TankTowerSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("TankTowerRoot"));
 	TankTowerSceneComponent->SetupAttachment(RootComponent);
 
-	TankTowerMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TankTowerMesh"));
+	UStaticMeshComponent* TankTowerMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TankTowerMesh"));
 	TankTowerMeshComponent->SetupAttachment(TankTowerSceneComponent);
 
-	TankGunMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TankGunMesh"));
+	UStaticMeshComponent* TankGunMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TankGunMesh"));
 	TankGunMeshComponent->SetupAttachment(TankTowerSceneComponent);
 
 	// Create gun controller
