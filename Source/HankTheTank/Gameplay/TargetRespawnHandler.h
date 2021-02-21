@@ -17,7 +17,6 @@ class UNavigationSystemV1;
 * if a target will land on an invalid position.
 */
 
-// TODO: make struct for min max values for respawn timer
 UCLASS()
 class HANKTHETANK_API ATargetRespawnHandler : public AActor
 {
