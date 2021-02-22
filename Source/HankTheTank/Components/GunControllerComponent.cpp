@@ -12,12 +12,19 @@ UGunControllerComponent::UGunControllerComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 }
-// TODO: maybe better solution
+
 void UGunControllerComponent::PreserveOriginalTowerRotation(const float fPreviousTankZTowerRot)
 {
-	FVector TowerRot = GunTowerComponentToControl->GetComponentRotation().Euler();
-	TowerRot.Z = fPreviousTankZTowerRot;
-	GunTowerComponentToControl->SetWorldRotation(FRotator::MakeFromEuler(TowerRot));
+	AActor* OwningActor = GetOwner();
+	if (OwningActor)
+	{
+		EXECUTE_BLOCK_CHECKED(GunTowerComponentToControl, LogPlayerTank, TEXT("%s could not preserve rotation, because GunTowerComponentToControl is nullptr"), *OwningActor->GetName())
+		{
+			FVector TowerRot = GunTowerComponentToControl->GetComponentRotation().Euler();
+			TowerRot.Z = fPreviousTankZTowerRot;
+			GunTowerComponentToControl->SetWorldRotation(FRotator::MakeFromEuler(TowerRot));
+		}
+	}
 }
 
 void UGunControllerComponent::BeginPlay()

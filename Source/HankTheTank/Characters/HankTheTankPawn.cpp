@@ -19,7 +19,8 @@ const FName AHankTheTankPawn::FireRocketBinding("FireRocket");
 
 AHankTheTankPawn::AHankTheTankPawn()
 {	
-	RootComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TankMovementMesh"));
+	TankRootMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TankMovementMesh"));
+	RootComponent = TankRootMesh;
 
 	TankTowerSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("TankTowerRoot"));
 	TankTowerSceneComponent->SetupAttachment(RootComponent);
@@ -58,7 +59,7 @@ void AHankTheTankPawn::BeginPlay()
 	GET_OBJ_CHECKED(ShootingComponent, UStaticHelperFunctions::GetActorCompAs<UShootingComponent>(this), LogPlayerTank,
 		TEXT("Tank %s could not fetch shooting component, have you forgot to set one?"), *GetName());
 }
-// TODO: maybe with physics
+
 void AHankTheTankPawn::Tick(float DeltaSeconds)
 {
 	// Find movement direction
