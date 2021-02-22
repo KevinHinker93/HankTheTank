@@ -15,9 +15,9 @@ UGunControllerComponent::UGunControllerComponent()
 // TODO: maybe better solution
 void UGunControllerComponent::PreserveOriginalTowerRotation(const float fPreviousTankZTowerRot)
 {
-	FVector TowerRot = GunTowerComponentToControl->GetComponentRotation().Euler();
+	/*FVector TowerRot = GunTowerComponentToControl->GetComponentRotation().Euler();
 	TowerRot.Z = fPreviousTankZTowerRot;
-	GunTowerComponentToControl->SetWorldRotation(FRotator::MakeFromEuler(TowerRot));
+	GunTowerComponentToControl->SetWorldRotation(FRotator::MakeFromEuler(TowerRot));*/
 }
 
 void UGunControllerComponent::BeginPlay()
@@ -31,7 +31,7 @@ void UGunControllerComponent::BeginPlay()
 		GET_OBJ_CHECKED(TargetHandlerComponent, UStaticHelperFunctions::GetActorCompAs<UTankTargetHandlerComponent>(OwningActor), LogPlayerTank,
 			TEXT("Tank: %s has no TankTargetHandlerComponent assigned, have you forgot to add one?"), *OwningActor->GetName());
 
-		GET_OBJ_CHECKED(GunTowerComponentToControl, UStaticHelperFunctions::GetActorCompByTagAs<USceneComponent>(OwningActor, nGunTowerComponentTagName), LogPlayerTank,
+		GET_OBJ_CHECKED(GunTowerComponentToControl, UStaticHelperFunctions::GetActorCompByTagAs<UStaticMeshComponent>(OwningActor, nGunTowerComponentTagName), LogPlayerTank,
 			TEXT("Tank: %s could not find a SceneComponent with tag: %s, have you forgot to add one or set the tag?"),
 			*OwningActor->GetName(), *nGunTowerComponentTagName.ToString());
 	}
@@ -42,11 +42,13 @@ void UGunControllerComponent::TickComponent(float DeltaTime, ELevelTick TickType
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	SetCurrentAngleBetweenGunTowerAndTarget();
-
+	//GunTowerComponentToControl->SetRelativeRotation(FRotator(0, fCurrentDesiredZTowerRotation, 0), true);
+	//GunTowerComponentToControl->SetPhysicsAngularVelocityInDegrees(FVector(0.0f, 0.0f, 0.0f));
 	// Only allow rotation when the mouse pointer at least moved fGunAngularThreshold angles
 	if (!bRotationIsDirty && FMath::Abs(fCurrentDesiredZTowerRotation) >= fGunAngularThreshold)
 	{
 		bRotationIsDirty = true;
+		GunTowerComponentToControl->SetPhysicsAngularVelocityInDegrees(FVector(0.0f, 0.0f, fSign * fGunAngularVelocity));
 	}
 
 	if (bRotationIsDirty)
@@ -108,12 +110,13 @@ void UGunControllerComponent::RotateTowardsTarget()
 		if (GetWorld())
 		{
 			// Create rotation vector, fSign determines the direction of the rotation
-			FVector AngularRotation = GunTowerRotation.RotateVector(FVector(0, 0, fSign * fGunAngularVelocity * GetWorld()->DeltaTimeSeconds));
-			GunTowerComponentToControl->AddWorldRotation(FRotator::MakeFromEuler(AngularRotation), false);
+			/*FVector AngularRotation = GunTowerRotation.RotateVector(FVector(0, 0, fSign * fGunAngularVelocity * GetWorld()->DeltaTimeSeconds));
+			GunTowerComponentToControl->AddWorldRotation(FRotator::MakeFromEuler(AngularRotation), false);*/
 
 			if (FMath::Abs(fGunTowerZRotationInDegrees - fCurrentDesiredZTowerRotation) < fAngularTolerance)
 			{
 				bRotationIsDirty = false;
+				GunTowerComponentToControl->SetPhysicsAngularVelocityInDegrees(FVector(0.0f, 0.0f, 0.0f));
 				// Set tank tower rotation to desired rotation to avoid rotation offset
 				FVector GunTowerRotationInEulerAngles = GunTowerComponentToControl->GetComponentRotation().Euler();
 				FRotator TargetRotation = FRotator::MakeFromEuler(FVector(GunTowerRotationInEulerAngles.X, GunTowerRotationInEulerAngles.Y, fCurrentDesiredZTowerRotation));

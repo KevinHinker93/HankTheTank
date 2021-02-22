@@ -57,7 +57,7 @@ protected:
 		FName nGunTowerComponentTagName;
 
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-		USceneComponent* GunTowerComponentToControl;
+		UStaticMeshComponent* GunTowerComponentToControl;
 
 	UPROPERTY()
 		UTankTargetHandlerComponent* TargetHandlerComponent;

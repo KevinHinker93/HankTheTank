@@ -37,7 +37,9 @@ protected:
 
 private:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
-		USceneComponent* TankTowerSceneComponent;
+		UStaticMeshComponent* TankRootSceneComponent;
+	/*UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
+		USceneComponent* TankTowerSceneComponent;*/
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
 		UStaticMeshComponent* TankTowerMeshComponent;

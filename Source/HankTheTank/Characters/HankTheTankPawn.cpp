@@ -19,16 +19,17 @@ const FName AHankTheTankPawn::FireRocketBinding("FireRocket");
 
 AHankTheTankPawn::AHankTheTankPawn()
 {	
-	RootComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TankMovementMesh"));
+	TankRootSceneComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TankMovementMesh"));
+	RootComponent = TankRootSceneComponent;
 
-	TankTowerSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("TankTowerRoot"));
-	TankTowerSceneComponent->SetupAttachment(RootComponent);
+	/*TankTowerSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("TankTowerRoot"));
+	TankTowerSceneComponent->SetupAttachment(RootComponent);*/
 
 	TankTowerMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TankTowerMesh"));
-	TankTowerMeshComponent->SetupAttachment(TankTowerSceneComponent);
+	TankTowerMeshComponent->SetupAttachment(RootComponent);
 
 	TankGunMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TankGunMesh"));
-	TankGunMeshComponent->SetupAttachment(TankTowerSceneComponent);
+	TankGunMeshComponent->SetupAttachment(RootComponent);
 
 	// Create gun controller
 	GunControllerComponent = CreateDefaultSubobject<UGunControllerComponent>(TEXT("GunController"));
@@ -68,21 +69,32 @@ void AHankTheTankPawn::Tick(float DeltaSeconds)
 	// Clamp max size so that (X=1, Y=1) doesn't cause faster movement in diagonal directions
 	const FVector MoveDirection = FVector(ForwardValue, RightValue, 0.f).GetClampedToMaxSize(1.0f);
 
+	TankRootSceneComponent->AddAngularImpulse(FVector(0, 0, RightValue * 30000000));
+	TankRootSceneComponent->AddImpulse(TankRootSceneComponent->GetForwardVector() * 200000 * ForwardValue);
+	//TankRootSceneComponent->AddImpulse(MoveDirection * 300000);
+	return;
+
 	// Calculate  movement
 	const FVector Movement = MoveDirection * MoveSpeed * DeltaSeconds;
 
 	// If non-zero size, move this actor
 	if (Movement.SizeSquared() > 0.0f)
 	{
-		const float fTankTowerZRot = TankTowerSceneComponent->GetComponentRotation().Euler().Z;
+		//const float fTankTowerZRot = TankTowerSceneComponent->GetComponentRotation().Euler().Z;
+		const float fTankTowerZRot = TankTowerMeshComponent->GetComponentRotation().Euler().Z;
+		
 		const FRotator NewRotation = Movement.Rotation();
 		FHitResult Hit(1.f);
 		
 		RootComponent->MoveComponent(Movement, NewRotation, true, &Hit);
+		
 
 		// Preserve gun tower rotation so it is facing same direction before a movement direction change
-		EXECUTE_FUNC_CHECKED(GunControllerComponent, GunControllerComponent->PreserveOriginalTowerRotation(fTankTowerZRot), LogPlayerTank,
-			TEXT("Tank %s could not preserve tower rotation, because GunControllerComponent was null, have you forgot to add one?"), *GetName());
+		/*EXECUTE_FUNC_CHECKED(GunControllerComponent, GunControllerComponent->PreserveOriginalTowerRotation(fTankTowerZRot), LogPlayerTank,
+			TEXT("Tank %s could not preserve tower rotation, because GunControllerComponent was null, have you forgot to add one?"), *GetName());*/
+
+			EXECUTE_FUNC_CHECKED(TankTowerMeshComponent, GunControllerComponent->PreserveOriginalTowerRotation(fTankTowerZRot), LogPlayerTank,
+				TEXT("Tank %s could not preserve tower rotation, because GunControllerComponent was null, have you forgot to add one?"), *GetName());
 	}
 }
 
