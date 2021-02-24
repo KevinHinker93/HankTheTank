@@ -111,7 +111,7 @@ void ATargetRespawnHandler::SpawnTarget()
 								}
 
 								// Check if the corrected spawn location away from the original overlapping actors is valid
-								// If not try to start finding a new complete radnom spawn location
+								// If not try to start finding a new complete random spawn location
 
 								bIsSpawnLocationBlocked = IsSpawnLocationBlocked(FinalTargetPosition, ShootingTarget, OverlappingActors);
 

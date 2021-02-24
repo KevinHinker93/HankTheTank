@@ -58,7 +58,7 @@ void ABulletProjectile::Tick(float DeltaSeconds)
 
 void ABulletProjectile::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	// Only add impulse and destroy projectile if we hit a physics
+	// Only add impulse and destroy projectile if we hit a physics object
 	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr) && OtherComp->IsSimulatingPhysics())
 	{
 		OtherComp->AddImpulseAtLocation(GetVelocity() * fBaseImpulseImpactStrength, GetActorLocation());

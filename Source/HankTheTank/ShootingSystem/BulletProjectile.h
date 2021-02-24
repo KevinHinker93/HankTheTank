@@ -21,9 +21,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 		float fBaseImpulseImpactStrength = 25.0f;
 
-	/**
-	* Called to let the projectile explode.
-	*/
 	virtual void Explode(bool bShouldDestroyParticle);
 
 protected:
@@ -54,7 +51,7 @@ protected:
 private:
 
 	// ---------------------------------------------------------
-	// Projectile collision callbacks, these are bind automatically at begin play
+	// Projectile collision callbacks, these are bound automatically at begin play
 	// Use OnProjectileHit and/or OnProjectileOverlap to override collision functionality
 
 	UFUNCTION()

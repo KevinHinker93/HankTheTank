@@ -44,7 +44,7 @@ void AMissileProjectile::Tick(float DeltaSeconds)
 			}
 			else
 			{
-				UE_LOG(LogShooting, Log, TEXT("Cannot adjust velocity of %s, becuase fTimeToReachMaxVelocityInSeconds is 0.0f"), *GetName());
+				UE_LOG(LogShooting, Log, TEXT("Cannot adjust velocity of %s, because fTimeToReachMaxVelocityInSeconds is 0"), *GetName());
 			}
 		}
 	}
@@ -52,7 +52,7 @@ void AMissileProjectile::Tick(float DeltaSeconds)
 
 void AMissileProjectile::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	// Only add impulse and destroy projectile if we hit a physics
+	// Only add impulse and destroy projectile if we hit a physics object
 	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr) && OtherComp->IsSimulatingPhysics())
 	{
 		OtherComp->AddRadialImpulse(Hit.ImpactPoint, fExplosionRadius, GetVelocity().Size() * fBaseImpulseImpactStrength, ERadialImpulseFalloff::RIF_Linear);
@@ -86,7 +86,7 @@ void AMissileProjectile::OnStartHoming(AActor* HomingTarget)
 
 void AMissileProjectile::SetProjectileVelocity(const float fVelocity)
 {
-	EXECUTE_BLOCK_CHECKED(ProjectileMovement, LogShooting, TEXT("Cannot set velocity of %s, becuase ProjectileMovement is null"), *GetName())
+	EXECUTE_BLOCK_CHECKED(ProjectileMovement, LogShooting, TEXT("Cannot set velocity of %s, because ProjectileMovement is null"), *GetName())
 	{
 		ProjectileMovement->Velocity += (GetActorForwardVector() * (fVelocity - ProjectileMovement->Velocity.Size()));
 		ProjectileMovement->MaxSpeed = fVelocity;
@@ -112,7 +112,7 @@ bool AMissileProjectile::IsNearestTarget(const AActor* Target)
 	}
 	else
 	{
-		// If there is no current homing target the new target is definately the nearest target
+		// If there is no current homing target the new target is definitely the nearest target
 		bIsNearest = true;
 	}
 

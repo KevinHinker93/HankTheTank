@@ -15,7 +15,7 @@ class UNavigationSystemV1;
 /**
 * Actor class responsible for spawning the targets the player needs to shoot.
 * Uses the nav mesh to find suitable spawn locations.
-* Conducts additional collision checks, for objects that do not effect the nav mesh,
+* Conducts additional collision checks, for objects that do not affect the nav mesh,
 * if a target will land on an invalid position.
 */
 

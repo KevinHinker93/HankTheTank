@@ -54,13 +54,13 @@ private:
 
 	/**
 	* Called to check if a new target is the nearest target.
-	* @warning - Only call this function if @param Target is checked for nullptr.
+	* @Warning - Only call this function if @param Target is checked for nullptr.
 	*/
 	bool IsNearestTarget(const AActor* Target);
 
 	/**
 	* Called to check if a Target is blocked by a static object.
-	* @warning - Only call this function if @param Target is checked for nullptr.
+	* @Warning - Only call this function if @param Target is checked for nullptr.
 	*/
 	bool IsTargetBlockedByAnObstacle(const AActor* Target);
 };
